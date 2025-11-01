@@ -1,30 +1,36 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { io } from "socket.io-client";
+import Auth from "./Auth";
 
-const socket = io(import.meta.env.VITE_BACKEND_URL || "http://localhost:3000");
+const API = import.meta.env.VITE_BACKEND_URL;
 
 function App() {
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [user, setUser] = useState(localStorage.getItem("user"));
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const socket = token ? io(API, { auth: { token } }) : null;
 
   useEffect(() => {
-    socket.on("message", (msg) => setMessages((prev) => [...prev, msg]));
-    return () => socket.off("message");
-  }, []);
+    if (!socket) return;
+    socket.on("message", (msg) => setMessages((p) => [...p, msg]));
+    return () => socket.disconnect();
+  }, [token]);
 
   const send = () => {
     if (!text.trim()) return;
-    socket.emit("send_message", {
-      body: text,
-      created_at: new Date().toISOString(),
-    });
+    socket.emit("send_message", { body: text });
     setText("");
   };
+
+  if (!token)
+    return <Auth setToken={setToken} setUser={setUser} />;
 
   return (
     <div style={{ padding: 20, fontFamily: "sans-serif" }}>
       <h2>💬 Realtime Chat</h2>
+      <p>Logged in as <b>{user}</b></p>
       <div
         style={{
           border: "1px solid #ccc",
@@ -35,7 +41,9 @@ function App() {
         }}
       >
         {messages.map((m, i) => (
-          <div key={i}>{m.body}</div>
+          <div key={i}>
+            <b>{m.user}:</b> {m.body}
+          </div>
         ))}
       </div>
       <input
