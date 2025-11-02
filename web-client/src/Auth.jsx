@@ -1,145 +1,130 @@
 import React, { useState } from "react";
 
-const API_BASE = "https://chat-app-2-9qbx.onrender.com"; // your backend URL
+const API_URL = "https://chat-app-y0st.onrender.com/api";
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [isSignup, setIsSignup] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
 
-  async function handleSubmit(e) {
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    const endpoint = isSignup ? "signup" : "login";
 
-    const endpoint = isLogin ? "/login" : "/signup";
-    const body = isLogin
-      ? { email, password }
-      : { name, email, password };
+    try {
+      const res = await fetch(`${API_URL}/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    const res = await fetch(`${API_BASE}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+      const data = await res.json();
 
-    const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Something went wrong");
 
-    if (isLogin) {
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", data.name);
-        window.location.href = "/chat"; // redirect to chat
-      } else {
-        alert(data.error || "Login failed");
-      }
-    } else {
-      if (data.success) {
-        alert("Signup successful! Please login.");
-        setIsLogin(true);
-      } else {
-        alert(data.error || "Signup failed");
-      }
+      localStorage.setItem("user", JSON.stringify(data.user));
+      window.location.href = "/chat";
+    } catch (err) {
+      setError(err.message);
     }
-  }
+  };
 
   return (
     <div
       style={{
         display: "flex",
+        height: "100vh",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh",
-        background: "#0d1117",
-        color: "#fff",
+        background: "linear-gradient(135deg, #1f2937, #4b5563)",
+        color: "white",
       }}
     >
-      <div
+      <form
+        onSubmit={handleSubmit}
         style={{
-          background: "#161b22",
+          width: "350px",
           padding: "2rem",
-          borderRadius: "1rem",
-          width: "300px",
-          textAlign: "center",
+          backgroundColor: "#111827",
+          borderRadius: "12px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
         }}
       >
-        <h2>{isLogin ? "Login" : "Sign Up"}</h2>
-        <form onSubmit={handleSubmit}>
-          {!isLogin && (
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              style={styles.input}
-            />
-          )}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={styles.input}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={styles.input}
-          />
-          <button type="submit" style={styles.button}>
-            {isLogin ? "Login" : "Sign Up"}
-          </button>
-        </form>
+        <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
+          {isSignup ? "Create Account" : "Welcome Back"}
+        </h2>
 
-        <p style={{ marginTop: "1rem", cursor: "pointer" }}>
-          {isLogin ? (
-            <>
-              Don’t have an account?{" "}
-              <span
-                style={{ color: "#58a6ff" }}
-                onClick={() => setIsLogin(false)}
-              >
-                Sign up
-              </span>
-            </>
-          ) : (
-            <>
-              Already have an account?{" "}
-              <span
-                style={{ color: "#58a6ff" }}
-                onClick={() => setIsLogin(true)}
-              >
-                Login
-              </span>
-            </>
-          )}
+        {isSignup && (
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={form.name}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          />
+        )}
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+          required
+          style={inputStyle}
+        />
+
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+          required
+          style={inputStyle}
+        />
+
+        {error && <p style={{ color: "red", fontSize: "0.9rem" }}>{error}</p>}
+
+        <button
+          type="submit"
+          style={{
+            ...inputStyle,
+            backgroundColor: "#2563eb",
+            color: "white",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          {isSignup ? "Sign Up" : "Login"}
+        </button>
+
+        <p style={{ textAlign: "center", marginTop: "1rem" }}>
+          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
+          <span
+            style={{ color: "#60a5fa", cursor: "pointer" }}
+            onClick={() => setIsSignup(!isSignup)}
+          >
+            {isSignup ? "Login" : "Sign Up"}
+          </span>
         </p>
-      </div>
+      </form>
     </div>
   );
 }
 
-const styles = {
-  input: {
-    width: "100%",
-    padding: "10px",
-    margin: "8px 0",
-    borderRadius: "5px",
-    border: "1px solid #30363d",
-    background: "#0d1117",
-    color: "#fff",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    background: "#238636",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
+const inputStyle = {
+  width: "100%",
+  padding: "10px",
+  margin: "8px 0",
+  borderRadius: "6px",
+  border: "1px solid #374151",
+  outline: "none",
+  backgroundColor: "#1f2937",
+  color: "white",
 };
