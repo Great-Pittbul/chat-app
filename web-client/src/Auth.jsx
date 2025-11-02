@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const API_URL = "https://chat-app-y0st.onrender.com/api";
+const API_URL = "https://chat-app-y0st.onrender.com"; // no /api prefix!
 
 export default function Auth() {
   const [isSignup, setIsSignup] = useState(false);
@@ -12,10 +12,11 @@ export default function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const endpoint = isSignup ? "signup" : "login";
+
+    const endpoint = isSignup ? "/signup" : "/login";
 
     try {
-      const res = await fetch(`${API_URL}/${endpoint}`, {
+      const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -23,9 +24,19 @@ export default function Auth() {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || "Something went wrong");
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
 
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // ✅ Backend returns { token, name } on login, { success: true } on signup
+      if (isSignup && data.success) {
+        alert("Signup successful! You can now log in.");
+        setIsSignup(false);
+        return;
+      }
+
+      // Save token + user info
+      localStorage.setItem("user", JSON.stringify(data));
       window.location.href = "/chat";
     } catch (err) {
       setError(err.message);
