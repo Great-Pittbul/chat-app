@@ -1,123 +1,171 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 
-const BACKEND_URL = "https://chat-app-2-9qbx.onrender.com"; // backend URL
+const SOCKET_URL = "https://chat-app-y0st.onrender.com"; // backend URL
+const API_URL = `${SOCKET_URL}/api`;
 
 export default function Chat() {
-  const [socket, setSocket] = useState(null);
-  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [text, setText] = useState("");
+  const [users, setUsers] = useState([]);
+  const socketRef = useRef(null);
 
-  const user = localStorage.getItem("user");
-  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       window.location.href = "/";
       return;
     }
 
-    const newSocket = io(BACKEND_URL, { auth: { token } });
-    setSocket(newSocket);
+    // Initialize socket connection
+    socketRef.current = io(SOCKET_URL, { transports: ["websocket"] });
 
-    newSocket.on("connect", () => console.log("Connected to chat"));
-    newSocket.on("history", (msgs) => setMessages(msgs));
-    newSocket.on("message", (msg) => {
+    socketRef.current.emit("join", user.name);
+
+    socketRef.current.on("message", (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
 
-    return () => newSocket.disconnect();
-  }, [token]);
+    socketRef.current.on("userList", (list) => setUsers(list));
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [user]);
 
   const sendMessage = (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
-    socket.emit("send_message", { body: message });
-    setMessage("");
+    if (text.trim()) {
+      const msg = { text, sender: user.name, time: new Date().toISOString() };
+      socketRef.current.emit("message", msg);
+      setText("");
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("user");
+    window.location.href = "/";
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={{ color: "#fff" }}>Chat Room</h2>
-      <div style={styles.chatBox}>
-        {messages.map((msg, i) => (
-          <div key={i} style={styles.msg}>
-            <strong>{msg.user}:</strong> {msg.body}
-          </div>
-        ))}
-      </div>
-      <form onSubmit={sendMessage} style={styles.form}>
-        <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type a message..."
-          style={styles.input}
-        />
-        <button style={styles.button}>Send</button>
-      </form>
-      <button
-        onClick={() => {
-          localStorage.clear();
-          window.location.href = "/";
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        background: "#111827",
+        color: "white",
+        fontFamily: "sans-serif",
+      }}
+    >
+      {/* Sidebar */}
+      <div
+        style={{
+          width: "240px",
+          background: "#1f2937",
+          padding: "1rem",
+          borderRight: "1px solid #374151",
         }}
-        style={styles.logout}
       >
-        Logout
-      </button>
+        <h2 style={{ marginBottom: "1rem", color: "#60a5fa" }}>Chat Users</h2>
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {users.map((u, i) => (
+            <li key={i} style={{ marginBottom: "0.5rem" }}>
+              {u}
+            </li>
+          ))}
+        </ul>
+        <button
+          onClick={logout}
+          style={{
+            marginTop: "1rem",
+            background: "#ef4444",
+            border: "none",
+            padding: "10px 15px",
+            borderRadius: "8px",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* Chat area */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "1rem",
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            marginBottom: "1rem",
+            borderRadius: "8px",
+            background: "#1f2937",
+            padding: "1rem",
+          }}
+        >
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              style={{
+                marginBottom: "0.8rem",
+                textAlign: msg.sender === user.name ? "right" : "left",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-block",
+                  background:
+                    msg.sender === user.name ? "#2563eb" : "#374151",
+                  padding: "8px 12px",
+                  borderRadius: "10px",
+                }}
+              >
+                <b>{msg.sender}</b>: {msg.text}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <form
+          onSubmit={sendMessage}
+          style={{ display: "flex", gap: "8px", alignItems: "center" }}
+        >
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type a message..."
+            style={{
+              flex: 1,
+              padding: "10px",
+              borderRadius: "6px",
+              border: "1px solid #374151",
+              background: "#1f2937",
+              color: "white",
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              padding: "10px 15px",
+              background: "#2563eb",
+              border: "none",
+              borderRadius: "6px",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    background: "#0d1117",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "20px",
-  },
-  chatBox: {
-    background: "#161b22",
-    borderRadius: "10px",
-    padding: "10px",
-    width: "80%",
-    height: "400px",
-    overflowY: "auto",
-    marginBottom: "10px",
-    color: "#fff",
-  },
-  msg: {
-    padding: "5px 0",
-  },
-  form: {
-    display: "flex",
-    gap: "10px",
-    width: "80%",
-  },
-  input: {
-    flex: 1,
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #30363d",
-    background: "#0d1117",
-    color: "#fff",
-  },
-  button: {
-    background: "#238636",
-    border: "none",
-    padding: "10px 20px",
-    borderRadius: "5px",
-    color: "#fff",
-    cursor: "pointer",
-  },
-  logout: {
-    background: "red",
-    color: "#fff",
-    border: "none",
-    padding: "8px 15px",
-    marginTop: "15px",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-};
