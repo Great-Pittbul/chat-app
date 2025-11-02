@@ -1,70 +1,145 @@
 import React, { useState } from "react";
 
-const API = import.meta.env.VITE_BACKEND_URL;
+const API_BASE = "https://chat-app-2-9qbx.onrender.com"; // your backend URL
 
-export default function Auth({ setToken, setUser }) {
+export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-  const submit = async () => {
-    setError("");
-    const url = `${API}/${isLogin ? "login" : "signup"}`;
-    const res = await fetch(url, {
+    const endpoint = isLogin ? "/login" : "/signup";
+    const body = isLogin
+      ? { email, password }
+      : { name, email, password };
+
+    const res = await fetch(`${API_BASE}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(body),
     });
+
     const data = await res.json();
-    if (!res.ok) return setError(data.error || "Error");
+
     if (isLogin) {
-      setToken(data.token);
-      setUser(data.name);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", data.name);
-    } else setIsLogin(true);
-  };
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", data.name);
+        window.location.href = "/chat"; // redirect to chat
+      } else {
+        alert(data.error || "Login failed");
+      }
+    } else {
+      if (data.success) {
+        alert("Signup successful! Please login.");
+        setIsLogin(true);
+      } else {
+        alert(data.error || "Signup failed");
+      }
+    }
+  }
 
   return (
-    <div style={{ maxWidth: 300, margin: "60px auto", textAlign: "center" }}>
-      <h3>{isLogin ? "Login" : "Sign Up"}</h3>
-      {!isLogin && (
-        <input
-          name="name"
-          placeholder="Name"
-          onChange={handleChange}
-          style={{ marginBottom: 8 }}
-        />
-      )}
-      <input
-        name="email"
-        placeholder="Email"
-        onChange={handleChange}
-        style={{ marginBottom: 8 }}
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        onChange={handleChange}
-        style={{ marginBottom: 8 }}
-      />
-      <div>
-        <button onClick={submit}>{isLogin ? "Login" : "Sign Up"}</button>
-        <p>
-          {isLogin ? "No account?" : "Have an account?"}{" "}
-          <span
-            style={{ color: "blue", cursor: "pointer" }}
-            onClick={() => setIsLogin(!isLogin)}
-          >
-            {isLogin ? "Sign up" : "Login"}
-          </span>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        background: "#0d1117",
+        color: "#fff",
+      }}
+    >
+      <div
+        style={{
+          background: "#161b22",
+          padding: "2rem",
+          borderRadius: "1rem",
+          width: "300px",
+          textAlign: "center",
+        }}
+      >
+        <h2>{isLogin ? "Login" : "Sign Up"}</h2>
+        <form onSubmit={handleSubmit}>
+          {!isLogin && (
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={styles.input}
+            />
+          )}
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <button type="submit" style={styles.button}>
+            {isLogin ? "Login" : "Sign Up"}
+          </button>
+        </form>
+
+        <p style={{ marginTop: "1rem", cursor: "pointer" }}>
+          {isLogin ? (
+            <>
+              Don’t have an account?{" "}
+              <span
+                style={{ color: "#58a6ff" }}
+                onClick={() => setIsLogin(false)}
+              >
+                Sign up
+              </span>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <span
+                style={{ color: "#58a6ff" }}
+                onClick={() => setIsLogin(true)}
+              >
+                Login
+              </span>
+            </>
+          )}
         </p>
-        {error && <div style={{ color: "red" }}>{error}</div>}
       </div>
     </div>
   );
 }
+
+const styles = {
+  input: {
+    width: "100%",
+    padding: "10px",
+    margin: "8px 0",
+    borderRadius: "5px",
+    border: "1px solid #30363d",
+    background: "#0d1117",
+    color: "#fff",
+  },
+  button: {
+    width: "100%",
+    padding: "10px",
+    background: "#238636",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+};
