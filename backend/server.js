@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 dotenv.config();
 
@@ -13,14 +14,33 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(express.json());
 
-// Temporary in-memory users (will move to DB later)
-const users = [];
+// 🔗 MongoDB connect
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
+
+// ----- SCHEMAS -----
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
+  avatar: String,
+});
+
+const messageSchema = new mongoose.Schema({
+  user: String,
+  body: String,
+  created_at: { type: Date, default: Date.now },
+});
+
+const User = mongoose.model("User", userSchema);
+const Message = mongoose.model("Message", messageSchema);
 
 // JWT middleware
 function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "No token" });
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
@@ -33,25 +53,28 @@ function verifyToken(req, res, next) {
 // ----- AUTH ROUTES -----
 app.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
-  if (users.find((u) => u.email === email))
-    return res.status(400).json({ error: "Email already exists" });
+  try {
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ error: "Email already exists" });
 
-  const hashed = await bcrypt.hash(password, 10);
-  const user = { id: Date.now(), name, email, password: hashed };
-  users.push(user);
-  res.json({ success: true });
+    const hashed = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, email, password: hashed });
+    res.json({ success: true, id: user._id });
+  } catch (err) {
+    res.status(500).json({ error: "Signup failed" });
+  }
 });
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = users.find((u) => u.email === email);
+  const user = await User.findOne({ email });
   if (!user) return res.status(400).json({ error: "Invalid email or password" });
 
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) return res.status(400).json({ error: "Invalid email or password" });
 
   const token = jwt.sign(
-    { id: user.id, name: user.name, email: user.email },
+    { id: user._id, name: user.name, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
@@ -62,7 +85,6 @@ app.post("/login", async (req, res) => {
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) return next(new Error("No token"));
-
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET);
     socket.user = user;
@@ -72,19 +94,23 @@ io.use((socket, next) => {
   }
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log("User connected:", socket.user.name);
 
-  socket.on("send_message", (msg) => {
-    io.emit("message", {
+  // Send last 20 messages on connect
+  const lastMessages = await Message.find().sort({ created_at: 1 }).limit(20);
+  socket.emit("history", lastMessages);
+
+  socket.on("send_message", async (msg) => {
+    const message = await Message.create({
       user: socket.user.name,
       body: msg.body,
-      created_at: new Date().toISOString(),
     });
+    io.emit("message", message);
   });
 });
 
-app.get("/", (req, res) => res.send("✅ Chat backend with auth running"));
+app.get("/", (req, res) => res.send("✅ Chat backend with MongoDB live"));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 Backend running on ${PORT}`));
