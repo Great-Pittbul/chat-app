@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import fs from "fs";  // ✅ added for Render secret file support
 
 dotenv.config();
 
@@ -16,8 +17,14 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(cors());
 app.use(express.json());
 
-// ✅ MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
+// ✅ Load JWT Secret (works for both local and Render)
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  fs.readFileSync("/etc/secrets/JWT_SECRET", "utf8").trim();
+
+// ✅ Connect MongoDB
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB error:", err));
 
@@ -26,13 +33,13 @@ const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
-  avatar: String
+  avatar: String,
 });
 
 const messageSchema = new mongoose.Schema({
   user: String,
   body: String,
-  created_at: { type: Date, default: Date.now }
+  created_at: { type: Date, default: Date.now },
 });
 
 const User = mongoose.model("User", userSchema);
@@ -49,7 +56,7 @@ app.post("/signup", async (req, res) => {
     await User.create({ name, email, password: hashed });
     res.json({ success: true });
   } catch (err) {
-    console.error("❌ Signup error:", err);
+    console.error(err);
     res.status(500).json({ error: "Signup failed" });
   }
 });
@@ -63,32 +70,16 @@ app.post("/login", async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: "Invalid credentials" });
 
-    // 🔍 DEBUG: Confirm secret
-    if (!process.env.JWT_SECRET) {
-      console.error("⚠️ JWT_SECRET missing in environment!");
-      return res.status(500).json({ error: "Missing JWT secret" });
-    }
-
     const token = jwt.sign(
       { id: user._id, name: user.name, email: user.email },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     res.json({ token, name: user.name });
   } catch (err) {
-    console.error("💥 Login error:", err);
+    console.error(err);
     res.status(500).json({ error: "Login failed" });
-  }
-});
-
-// ----- DEBUG ROUTE -----
-app.get("/debug/users", async (req, res) => {
-  try {
-    const users = await User.find({}, "name email");
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
   }
 });
 
@@ -97,7 +88,7 @@ io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) return next(new Error("No token"));
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
+    const user = jwt.verify(token, JWT_SECRET);
     socket.user = user;
     next();
   } catch {
@@ -108,13 +99,14 @@ io.use((socket, next) => {
 io.on("connection", async (socket) => {
   console.log(`💬 ${socket.user.name} connected`);
 
+  // Send last 20 messages
   const lastMessages = await Message.find().sort({ created_at: 1 }).limit(20);
   socket.emit("history", lastMessages);
 
   socket.on("send_message", async (msg) => {
     const message = await Message.create({
       user: socket.user.name,
-      body: msg.body
+      body: msg.body,
     });
     io.emit("message", message);
   });
