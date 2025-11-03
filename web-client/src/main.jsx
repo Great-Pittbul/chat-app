@@ -3,30 +3,27 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./Auth";
 import Chat from "./Chat";
+import "./style.css"; // global styles
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const user = JSON.parse(localStorage.getItem("user"));
 
+  // Apply theme to <body>
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (err) {
-      console.error("LocalStorage parse error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  if (loading) return <div className="loading-screen">Loading...</div>;
+    document.body.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   return (
     <Router>
+      <div className="theme-toggle">
+        <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
+          {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
+        </button>
+      </div>
       <Routes>
-        <Route path="/" element={!user ? <Auth /> : <Navigate to="/chat" />} />
+        <Route path="/" element={user ? <Navigate to="/chat" /> : <Auth />} />
         <Route path="/chat" element={user ? <Chat /> : <Navigate to="/" />} />
       </Routes>
     </Router>
