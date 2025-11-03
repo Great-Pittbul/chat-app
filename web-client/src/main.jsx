@@ -1,30 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./Auth";
 import Chat from "./Chat";
-import "./style.css"; // global styles
+import Settings from "./Settings"; // ✅ New Settings page
+import "./style.css"; // Global styles
 
 function App() {
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const user = JSON.parse(localStorage.getItem("user"));
-
-  // Apply theme to <body>
-  useEffect(() => {
-    document.body.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   return (
     <Router>
-      <div className="theme-toggle">
-        <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-          {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
-        </button>
-      </div>
       <Routes>
+        {/* Auth route */}
         <Route path="/" element={user ? <Navigate to="/chat" /> : <Auth />} />
+
+        {/* Chat route */}
         <Route path="/chat" element={user ? <Chat /> : <Navigate to="/" />} />
+
+        {/* Settings route */}
+        <Route path="/settings" element={user ? <Settings /> : <Navigate to="/" />} />
+
+        {/* Catch-all redirect */}
+        <Route path="*" element={<Navigate to={user ? "/chat" : "/"} />} />
       </Routes>
     </Router>
   );
