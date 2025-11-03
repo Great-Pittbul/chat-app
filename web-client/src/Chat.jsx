@@ -1,273 +1,125 @@
-import React, { useEffect, useState, useRef } from "react";
-import io from "socket.io-client";
-import { Sun, Moon, Settings, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+import { LogOut, Settings, Send, Sun, Moon } from "lucide-react";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
+const socket = io(API_URL, {
+  autoConnect: false,
+});
 
 export default function Chat() {
   const user = JSON.parse(localStorage.getItem("user"));
   const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
-  const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
+  const [input, setInput] = useState("");
+  const [darkMode, setDarkMode] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const socketRef = useRef(null);
-  const chatEndRef = useRef(null);
 
-  // Connect socket
   useEffect(() => {
-    socketRef.current = io(API_URL, {
-      auth: { token: user.token },
-    });
+    if (!user) return;
 
-    socketRef.current.on("history", (msgs) => setMessages(msgs));
-    socketRef.current.on("message", (msg) => setMessages((prev) => [...prev, msg]));
+    socket.auth = { token: user.token };
+    socket.connect();
 
-    return () => socketRef.current.disconnect();
-  }, [user.token]);
+    socket.on("history", (msgs) => setMessages(msgs));
+    socket.on("message", (msg) => setMessages((prev) => [...prev, msg]));
 
-  // Scroll to bottom
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    return () => socket.disconnect();
+  }, [user]);
 
-  // Toggle theme
-  useEffect(() => {
-    document.body.style.background = dark ? "#0f172a" : "#f8fafc";
-    document.body.style.color = dark ? "white" : "black";
-    localStorage.setItem("theme", dark ? "dark" : "light");
-  }, [dark]);
-
-  const sendMessage = () => {
-    if (text.trim()) {
-      socketRef.current.emit("send_message", { body: text });
-      setText("");
-    }
+  const sendMessage = (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    socket.emit("send_message", { body: input });
+    setInput("");
   };
 
-  const logout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("user");
     window.location.href = "/";
   };
 
   return (
     <div
-      style={{
-        maxWidth: "700px",
-        margin: "0 auto",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: dark ? "#1e293b" : "white",
-        boxShadow: dark ? "0 0 10px rgba(255,255,255,0.1)" : "0 0 10px rgba(0,0,0,0.1)",
-        borderRadius: "12px",
-        overflow: "hidden",
-      }}
+      className={`min-h-screen flex flex-col transition-all duration-500 ${
+        darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"
+      }`}
     >
-      {/* Top Bar */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem",
-          background: dark ? "#0f172a" : "#f1f5f9",
-          borderBottom: dark ? "1px solid #334155" : "1px solid #e2e8f0",
-        }}
-      >
-        <h2>{user?.name}'s Chat</h2>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+      {/* Header */}
+      <header className="flex items-center justify-between p-4 border-b border-gray-700">
+        <h1 className="text-xl font-semibold">💬 Chat Room</h1>
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => setDark(!dark)}
-            title="Toggle Theme"
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: dark ? "#facc15" : "#334155",
-              transition: "0.3s",
-            }}
-          >
-            {dark ? <Sun size={22} /> : <Moon size={22} />}
-          </button>
-
-          <button
-            onClick={() => setShowSettings(true)}
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2 rounded-full hover:bg-gray-700 transition-all"
             title="Settings"
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: dark ? "#93c5fd" : "#334155",
-              transition: "0.3s",
-            }}
           >
             <Settings size={22} />
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Chat Messages */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "1rem",
-          background: dark ? "#1e293b" : "#f8fafc",
-        }}
-      >
-        {messages.map((msg, i) => (
+      {/* Messages */}
+      <main className="flex-1 overflow-y-auto p-4 space-y-2">
+        {messages.map((msg, idx) => (
           <div
-            key={i}
-            style={{
-              background:
-                msg.user === user.name
-                  ? dark
-                    ? "#2563eb"
-                    : "#3b82f6"
-                  : dark
-                  ? "#334155"
-                  : "#e2e8f0",
-              color: "white",
-              padding: "8px 12px",
-              borderRadius: "10px",
-              margin: "8px 0",
-              alignSelf: msg.user === user.name ? "flex-end" : "flex-start",
-              maxWidth: "80%",
-            }}
+            key={idx}
+            className={`max-w-xs p-3 rounded-xl ${
+              msg.user === user.name
+                ? "bg-blue-600 text-white ml-auto"
+                : darkMode
+                ? "bg-gray-700"
+                : "bg-gray-200"
+            }`}
           >
-            <strong>{msg.user}</strong>
-            <p style={{ margin: "5px 0 0", fontSize: "0.95rem" }}>{msg.body}</p>
+            <strong>{msg.user}:</strong> <span>{msg.body}</span>
           </div>
         ))}
-        <div ref={chatEndRef} />
-      </div>
+      </main>
 
-      {/* Input Area */}
-      <div
-        style={{
-          display: "flex",
-          padding: "1rem",
-          background: dark ? "#0f172a" : "#f1f5f9",
-          borderTop: dark ? "1px solid #334155" : "1px solid #e2e8f0",
-        }}
+      {/* Input */}
+      <form
+        onSubmit={sendMessage}
+        className="flex items-center gap-2 p-4 border-t border-gray-700"
       >
         <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Type your message..."
-          style={{
-            flex: 1,
-            padding: "10px",
-            borderRadius: "8px",
-            border: "1px solid #64748b",
-            outline: "none",
-            background: dark ? "#1e293b" : "white",
-            color: dark ? "white" : "black",
-            marginRight: "0.5rem",
-          }}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type a message..."
+          className={`flex-1 px-4 py-2 rounded-lg outline-none ${
+            darkMode
+              ? "bg-gray-800 text-white placeholder-gray-400"
+              : "bg-white text-gray-900 placeholder-gray-500"
+          }`}
         />
         <button
-          onClick={sendMessage}
-          style={{
-            backgroundColor: "#2563eb",
-            color: "white",
-            border: "none",
-            padding: "10px 16px",
-            borderRadius: "8px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            transition: "0.3s",
-          }}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
+          type="submit"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-all"
         >
-          Send
+          <Send size={18} /> Send
         </button>
-      </div>
+      </form>
 
-      {/* Settings Modal */}
+      {/* Settings Panel */}
       {showSettings && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 999,
-          }}
-          onClick={() => setShowSettings(false)}
+          className={`absolute top-0 right-0 h-full w-64 p-6 shadow-lg border-l border-gray-700 transform transition-all duration-300 ${
+            darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+          }`}
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: dark ? "#1e293b" : "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              width: "300px",
-              textAlign: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-              position: "relative",
-            }}
+          <h2 className="text-lg font-semibold mb-4">⚙️ Settings</h2>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="flex items-center gap-2 mb-4 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg transition-all"
           >
-            <button
-              onClick={() => setShowSettings(false)}
-              style={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: dark ? "#fca5a5" : "#ef4444",
-              }}
-            >
-              <X size={20} />
-            </button>
-
-            <h3 style={{ marginBottom: "1rem" }}>Settings</h3>
-
-            <button
-              onClick={() => setDark(!dark)}
-              style={{
-                width: "100%",
-                padding: "10px",
-                marginBottom: "1rem",
-                background: dark ? "#2563eb" : "#3b82f6",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                transition: "0.3s",
-              }}
-              onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
-            >
-              Toggle {dark ? "Light" : "Dark"} Mode
-            </button>
-
-            <button
-              onClick={logout}
-              style={{
-                width: "100%",
-                padding: "10px",
-                background: "#ef4444",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                transition: "0.3s",
-                fontWeight: "bold",
-              }}
-              onMouseEnter={(e) => (e.target.style.backgroundColor = "#b91c1c")}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#ef4444")}
-            >
-              Logout
-            </button>
-          </div>
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg transition-all"
+          >
+            <LogOut size={18} /> Logout
+          </button>
         </div>
       )}
     </div>
