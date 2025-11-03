@@ -1,147 +1,84 @@
 import React, { useState } from "react";
 
-const API_URL = "https://chat-app-y0st.onrender.com"; // ✅ your backend URL
-
 export default function Auth() {
-  const [isSignup, setIsSignup] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
-    const endpoint = isSignup ? "/signup" : "/login";
+    const url = isLogin
+      ? "https://chat-app-y0st.onrender.com/login"
+      : "https://chat-app-y0st.onrender.com/signup";
 
     try {
-      const res = await fetch(`${API_URL}${endpoint}`, {
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
+      if (!res.ok) return alert(data.error || "Something went wrong");
 
-      if (!res.ok) {
-        throw new Error(data.error || "Something went wrong");
-      }
-
-      // ✅ Signup
-      if (isSignup && data.success) {
-        alert("Signup successful! Please log in now.");
-        setIsSignup(false);
-        return;
-      }
-
-      // ✅ Login (backend returns { token, name })
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("name", data.name);
+      if (isLogin) {
+        localStorage.setItem("user", JSON.stringify(data));
         window.location.href = "/chat";
       } else {
-        throw new Error("Login failed");
+        alert("Signup successful! Please login.");
+        setIsLogin(true);
       }
     } catch (err) {
-      setError(err.message);
+      console.error(err);
+      alert("Connection failed");
     }
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #1f2937, #4b5563)",
-        color: "white",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          width: "350px",
-          padding: "2rem",
-          backgroundColor: "#111827",
-          borderRadius: "12px",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-        }}
-      >
-        <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
-          {isSignup ? "Create Account" : "Welcome Back"}
-        </h2>
-
-        {isSignup && (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>{isLogin ? "Welcome Back" : "Create Account"}</h2>
+        <form onSubmit={handleSubmit}>
+          {!isLogin && (
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              className="auth-input"
+              value={form.name}
+              onChange={handleChange}
+              required
+            />
+          )}
           <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={form.name}
+            type="email"
+            name="email"
+            placeholder="Email"
+            className="auth-input"
+            value={form.email}
             onChange={handleChange}
             required
-            style={inputStyle}
           />
-        )}
-
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        />
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        />
-
-        {error && <p style={{ color: "red", fontSize: "0.9rem" }}>{error}</p>}
-
-        <button
-          type="submit"
-          style={{
-            ...inputStyle,
-            backgroundColor: "#2563eb",
-            color: "white",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          {isSignup ? "Sign Up" : "Login"}
-        </button>
-
-        <p style={{ textAlign: "center", marginTop: "1rem" }}>
-          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-          <span
-            style={{ color: "#60a5fa", cursor: "pointer" }}
-            onClick={() => setIsSignup(!isSignup)}
-          >
-            {isSignup ? "Login" : "Sign Up"}
-          </span>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            className="auth-input"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+          <button type="submit" className="auth-button">
+            {isLogin ? "Login" : "Sign Up"}
+          </button>
+        </form>
+        <p className="auth-toggle" onClick={() => setIsLogin(!isLogin)}>
+          {isLogin
+            ? "Don’t have an account? Sign up"
+            : "Already have an account? Login"}
         </p>
-      </form>
+      </div>
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: "10px",
-  margin: "8px 0",
-  borderRadius: "6px",
-  border: "1px solid #374151",
-  outline: "none",
-  backgroundColor: "#1f2937",
-  color: "white",
-};
