@@ -5,7 +5,10 @@ import Auth from "./Auth";
 import Chat from "./Chat";
 
 function App() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  // Load token or user info (based on what Auth saves)
+  const token = localStorage.getItem("token");
+  const user = token ? true : false;
+
   return (
     <Router>
       <Routes>
