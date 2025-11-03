@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 
-const API_URL = "https://chat-app-y0st.onrender.com"; // no /api prefix!
+const API_URL = "https://chat-app-y0st.onrender.com"; // ✅ your backend URL
 
 export default function Auth() {
   const [isSignup, setIsSignup] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,16 +29,21 @@ export default function Auth() {
         throw new Error(data.error || "Something went wrong");
       }
 
-      // ✅ Backend returns { token, name } on login, { success: true } on signup
+      // ✅ Signup
       if (isSignup && data.success) {
-        alert("Signup successful! You can now log in.");
+        alert("Signup successful! Please log in now.");
         setIsSignup(false);
         return;
       }
 
-      // Save token + user info
-      localStorage.setItem("user", JSON.stringify(data));
-      window.location.href = "/chat";
+      // ✅ Login (backend returns { token, name })
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("name", data.name);
+        window.location.href = "/chat";
+      } else {
+        throw new Error("Login failed");
+      }
     } catch (err) {
       setError(err.message);
     }
