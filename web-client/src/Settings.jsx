@@ -1,156 +1,69 @@
-import React, { useState, useEffect } from "react";
-import { ArrowLeft, LogOut, User, Sun, Moon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const stored = JSON.parse(localStorage.getItem("user") || "{}");
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
-  const [name, setName] = useState(storedUser?.name || "");
+  const [name, setName] = useState(stored.name || "");
 
   useEffect(() => {
-    document.body.setAttribute("data-theme", theme);
+    document.body.setAttribute("data-theme", theme === "dark" ? "dark" : "light");
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const handleSaveName = () => {
-    if (!name.trim()) return;
-    const updatedUser = { ...storedUser, name };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    alert("✅ Name updated successfully!");
+  const saveName = () => {
+    if (!name.trim()) return alert("Enter a name");
+    const u = { ...stored, name };
+    localStorage.setItem("user", JSON.stringify(u));
+    alert("Name saved");
   };
 
-  const handleLogout = () => {
+  const logout = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: theme === "dark" ? "#0f172a" : "#f1f5f9",
-        color: theme === "dark" ? "white" : "black",
-        transition: "0.3s",
-        position: "relative",
-      }}
-    >
-      {/* Back to Chat */}
-      <button
-        onClick={() => navigate("/chat")}
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "20px",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: theme === "dark" ? "#93c5fd" : "#2563eb",
-        }}
+    <div className="app-centered">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45 }}
+        style={{ width: 420, maxWidth: "95%" }}
       >
-        <ArrowLeft size={24} />
-      </button>
+        <div className="auth-card" style={{ padding: 20 }}>
+          <div style={{ textAlign: "center", marginBottom: 12 }}>
+            <div className="kumbo-logo" style={{ fontSize: 26 }}>KUMBO</div>
+            <div className="kumbo-tagline">Connect. Evolve. Belong.</div>
+          </div>
 
-      {/* Brand */}
-      <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>⚙️ KUMBO Settings</h1>
-      <p style={{ opacity: 0.7, marginBottom: "2rem" }}>Manage your preferences</p>
+          <div style={{ marginTop: 8 }}>
+            <label style={{ fontWeight: 700, display: "block", marginBottom: 8 }}>Display name</label>
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button className="btn" onClick={saveName}>Save</button>
+              <button className="btn-ghost" onClick={() => navigate("/chat")}>Back</button>
+            </div>
+          </div>
 
-      {/* Name Update */}
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          alignItems: "center",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <User size={20} />
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Enter new display name"
-          style={{
-            padding: "10px",
-            borderRadius: "8px",
-            border: "1px solid #64748b",
-            outline: "none",
-            background: theme === "dark" ? "#1e293b" : "white",
-            color: theme === "dark" ? "white" : "black",
-          }}
-        />
-        <button
-          onClick={handleSaveName}
-          style={{
-            backgroundColor: "#2563eb",
-            color: "white",
-            border: "none",
-            padding: "10px 14px",
-            borderRadius: "8px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            transition: "0.3s",
-          }}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
-        >
-          Save
-        </button>
-      </div>
+          <div style={{ marginTop: 18 }}>
+            <label style={{ fontWeight: 700, display: "block", marginBottom: 8 }}>Theme</label>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="btn-ghost" onClick={() => setTheme("light")}>Light</button>
+              <button className="btn" onClick={() => setTheme("dark")} style={{ maxWidth: 110 }}>Dark</button>
+            </div>
+          </div>
 
-      {/* Theme Toggle */}
-      <button
-        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-        style={{
-          width: "250px",
-          padding: "10px",
-          marginBottom: "1rem",
-          background: theme === "dark" ? "#2563eb" : "#3b82f6",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "0.3s",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0.5rem",
-        }}
-        onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
-        onMouseLeave={(e) => (e.target.style.backgroundColor = theme === "dark" ? "#2563eb" : "#3b82f6")}
-      >
-        {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        Toggle {theme === "dark" ? "Light" : "Dark"} Mode
-      </button>
-
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
-        style={{
-          width: "250px",
-          padding: "10px",
-          background: "#ef4444",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "0.3s",
-          fontWeight: "bold",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0.5rem",
-        }}
-        onMouseEnter={(e) => (e.target.style.backgroundColor = "#b91c1c")}
-        onMouseLeave={(e) => (e.target.style.backgroundColor = "#ef4444")}
-      >
-        <LogOut size={18} />
-        Logout
-      </button>
+          <div style={{ marginTop: 20 }}>
+            <button className="btn" onClick={logout} style={{ background: "#ef4444", color: "white" }}>
+              <LogOut size={16} /> &nbsp; Logout
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
