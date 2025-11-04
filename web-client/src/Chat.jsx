@@ -1,172 +1,80 @@
-import React, { useEffect, useState, useRef } from "react";
-import io from "socket.io-client";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Moon, Settings, X, LogOut, SendHorizonal } from "lucide-react";
-
-const API_URL = import.meta.env.VITE_API_URL || "https://chat-app-y0st.onrender.com";
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Send, Menu } from "lucide-react";
+import clsx from "clsx";
 
 export default function Chat() {
-  const user = JSON.parse(localStorage.getItem("user"));
   const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
-  const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
-  const [showSettings, setShowSettings] = useState(false);
-
-  const socketRef = useRef(null);
-  const chatEndRef = useRef(null);
-
-  // ✅ SOCKET CONNECTION
-  useEffect(() => {
-    socketRef.current = io(API_URL, {
-      auth: { token: user.token },
-    });
-
-    socketRef.current.on("history", (msgs) => setMessages(msgs));
-    socketRef.current.on("message", (msg) => setMessages((prev) => [...prev, msg]));
-
-    return () => socketRef.current.disconnect();
-  }, [user.token]);
-
-  // ✅ AUTO SCROLL
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // ✅ THEME SYNC
-  useEffect(() => {
-    document.body.setAttribute("data-theme", dark ? "dark" : "light");
-    localStorage.setItem("theme", dark ? "dark" : "light");
-  }, [dark]);
+  const [input, setInput] = useState("");
+  const bottomRef = useRef(null);
 
   const sendMessage = () => {
-    if (!text.trim()) return;
-
-    socketRef.current.emit("send_message", { body: text });
-    setText("");
+    if (!input.trim()) return;
+    setMessages((prev) => [...prev, { from: "me", text: input }]);
+    setInput("");
   };
 
-  const logout = () => {
-    localStorage.removeItem("user");
-    window.location.href = "/";
-  };
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
-    <div className="chat-wrapper">
-
-      {/* ✅ TOP BAR */}
+    <div className="w-full h-screen bg-[#0A0A0A] text-white flex flex-col relative overflow-hidden">
+      {/* Header */}
       <motion.div
-        className="chat-top-bar glass-panel"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="p-4 flex items-center justify-between bg-[#0F0F0F]/60 backdrop-blur-xl border-b border-white/5"
       >
-        <div className="chat-title">KUMBO</div>
-
-        <div className="chat-actions">
-          <button
-            className="icon-btn"
-            onClick={() => setDark(!dark)}
-            title="Toggle Theme"
-          >
-            {dark ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-
-          <button
-            className="icon-btn"
-            onClick={() => setShowSettings(true)}
-          >
-            <Settings size={21} />
-          </button>
+        <div className="flex items-center gap-3">
+          <ArrowLeft className="w-5 h-5 text-white/80" />
+          <span className="font-semibold text-lg tracking-wide text-white">Kumbo Chat</span>
         </div>
+        <Menu className="w-6 h-6 text-white/70" />
       </motion.div>
 
-      {/* ✅ MESSAGES AREA */}
-      <div className="chat-body">
-        <AnimatePresence>
-          {messages.map((msg, i) => {
-            const isMine = msg.user === user.name;
-
-            return (
-              <motion.div
-                key={i}
-                className={`message-bubble ${isMine ? "mine" : "theirs"}`}
-                initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                {!isMine && <div className="msg-user">{msg.user}</div>}
-
-                <div className="msg-text">{msg.body}</div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-
-        <div ref={chatEndRef} />
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+        {messages.map((msg, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className={clsx(
+              "max-w-[75%] px-4 py-3 rounded-2xl text-sm shadow-lg", {
+                "ml-auto bg-gradient-to-br from-yellow-500/20 to-yellow-700/20 border border-yellow-500/10 text-white":
+                  msg.from === "me",
+                "bg-white/5 border border-white/10 text-white/90": msg.from !== "me",
+              }
+            )}
+          >
+            {msg.text}
+          </motion.div>
+        ))}
+        <div ref={bottomRef} />
       </div>
 
-      {/* ✅ INPUT BAR */}
+      {/* Input Area */}
       <motion.div
-        className="chat-input-bar glass-panel"
-        initial={{ opacity: 0, y: 18 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.08 }}
+        className="p-4 bg-[#0F0F0F]/60 backdrop-blur-xl border-t border-white/5 flex items-center gap-3"
       >
         <input
-          className="chat-input"
-          value={text}
-          placeholder="Write something..."
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          className="flex-1 bg-white/5 border border-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-yellow-500/40"
+          placeholder="Type a message..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
         />
-
-        <button className="send-btn" onClick={sendMessage}>
-          <SendHorizonal size={20} />
+        <button
+          onClick={sendMessage}
+          className="p-3 bg-gradient-to-br from-yellow-400/30 to-yellow-600/30 border border-yellow-500/20 rounded-xl hover:opacity-80 transition"
+        >
+          <Send className="w-5 h-5 text-yellow-300" />
         </button>
       </motion.div>
-
-      {/* ✅ SETTINGS MODAL */}
-      <AnimatePresence>
-        {showSettings && (
-          <motion.div
-            className="settings-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="settings-box glass-panel"
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.35 }}
-            >
-              <button className="close-settings" onClick={() => setShowSettings(false)}>
-                <X size={22} />
-              </button>
-
-              <h2 className="settings-title">Settings</h2>
-
-              <button
-                className="luxury-btn"
-                onClick={() => setDark(!dark)}
-                style={{ marginBottom: 18 }}
-              >
-                Toggle {dark ? "Light" : "Dark"} Mode
-              </button>
-
-              <button
-                className="logout-btn"
-                onClick={logout}
-              >
-                <LogOut size={18} />
-                Logout
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
