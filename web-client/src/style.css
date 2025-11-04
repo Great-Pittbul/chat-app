@@ -22,6 +22,12 @@
   --speed: 0.35s;
 }
 
+/* ---------- DEFAULT FALLBACK (IMPORTANT FIX) ---------- */
+body:not([data-theme]) {
+  background: var(--dark-bg);
+  color: white;
+}
+
 /* ---------- THEME HANDLER ---------- */
 body[data-theme="dark"] {
   background: var(--dark-bg);
