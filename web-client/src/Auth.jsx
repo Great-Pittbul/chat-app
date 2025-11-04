@@ -1,162 +1,184 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+
+const API_URL = "https://chat-app-y0st.onrender.com";
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isSignup, setIsSignup] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const API = import.meta.env.VITE_API_URL || "https://chat-app-y0st.onrender.com";
+  const theme = localStorage.getItem("theme") || "light";
 
-  const handleAuth = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     setError("");
 
     try {
-      const endpoint = isLogin ? "/login" : "/signup";
-      const body = isLogin
-        ? { email, password }
-        : { name, email, password };
-
-      const res = await fetch(API + endpoint, {
+      const endpoint = isSignup ? "/signup" : "/login";
+      const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          isSignup ? { name, email, password } : { email, password }
+        ),
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-      if (!res.ok) {
-        setError(data.message || "Authentication failed");
-        return;
+      if (isSignup) {
+        alert("✅ Signup successful! Please log in.");
+        setIsSignup(false);
+      } else {
+        localStorage.setItem("user", JSON.stringify(data));
+        window.location.href = "/chat";
       }
-
-      // Save user
-      localStorage.setItem("user", JSON.stringify(data.user));
-      window.location.href = "/chat";
     } catch (err) {
-      setError("Network error — try again.");
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <motion.div
-        className="auth-box glass-panel"
-        initial={{ opacity: 0, y: 25 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: "easeOut" }}
+    <div
+      style={{
+        height: "100vh",
+        background:
+          theme === "dark"
+            ? "linear-gradient(135deg, #0f172a, #1e293b)"
+            : "linear-gradient(135deg, #e0f2fe, #f8fafc)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "0.4s ease",
+      }}
+    >
+      <div
+        style={{
+          width: "350px",
+          background:
+            theme === "dark"
+              ? "rgba(30, 41, 59, 0.9)"
+              : "rgba(255, 255, 255, 0.9)",
+          boxShadow:
+            theme === "dark"
+              ? "0 0 20px rgba(255,255,255,0.05)"
+              : "0 4px 20px rgba(0,0,0,0.1)",
+          padding: "2rem",
+          borderRadius: "16px",
+          backdropFilter: "blur(10px)",
+          textAlign: "center",
+          color: theme === "dark" ? "white" : "#1e293b",
+          transition: "0.3s ease",
+        }}
       >
-        {/* Title */}
-        <motion.h2
-          className="auth-title"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          KUMBO
-        </motion.h2>
-
-        {/* Toggle buttons */}
-        <motion.div
-          className="auth-toggle"
+        <h1
           style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 18,
-            gap: 14
+            fontSize: "1.8rem",
+            fontWeight: "bold",
+            marginBottom: "1rem",
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
         >
-          <button
-            className={`btn-alt ${isLogin ? "" : "active"}`}
-            style={{
-              width: "50%",
-            }}
-            onClick={() => setIsLogin(false)}
-          >
-            Sign Up
-          </button>
+          💬 Welcome to <span style={{ color: "#2563eb" }}>KUMBO</span>
+        </h1>
+        <p style={{ opacity: 0.8, marginBottom: "1.5rem" }}>
+          {isSignup ? "Create your account" : "Login to continue"}
+        </p>
 
-          <button
-            className={`btn-alt ${isLogin ? "active" : ""}`}
-            style={{
-              width: "50%",
-            }}
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </button>
-        </motion.div>
-
-        {/* Name field (only signup) */}
-        {!isLogin && (
-          <motion.input
-            type="text"
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+        <form onSubmit={handleSubmit}>
+          {isSignup && (
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={inputStyle(theme)}
+            />
+          )}
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={inputStyle(theme)}
           />
-        )}
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={inputStyle(theme)}
+          />
 
-        {/* Email */}
-        <motion.input
-          type="email"
-          placeholder="Email Address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-        />
+          {error && (
+            <p style={{ color: "#ef4444", marginBottom: "1rem", fontSize: "0.9rem" }}>
+              {error}
+            </p>
+          )}
 
-        {/* Password */}
-        <motion.input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        />
-
-        {/* Error message */}
-        {error && (
-          <motion.div
+          <button
+            type="submit"
+            disabled={loading}
             style={{
-              marginTop: 10,
-              marginBottom: 10,
-              color: "#ff7777",
-              textAlign: "center",
-              fontSize: 14,
+              width: "100%",
+              padding: "12px",
+              background: "#2563eb",
+              color: "white",
+              fontWeight: "bold",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "0.3s",
             }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
           >
-            {error}
-          </motion.div>
-        )}
+            {loading
+              ? "Please wait..."
+              : isSignup
+              ? "Sign Up"
+              : "Log In"}
+          </button>
+        </form>
 
-        {/* Submit */}
-        <motion.button
-          onClick={handleAuth}
-          className="luxury-btn"
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          transition={{ type: "spring", stiffness: 200 }}
-        >
-          {isLogin ? "Login" : "Create Account"}
-        </motion.button>
-      </motion.div>
+        <p style={{ marginTop: "1.2rem" }}>
+          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
+          <span
+            onClick={() => setIsSignup(!isSignup)}
+            style={{
+              color: "#2563eb",
+              cursor: "pointer",
+              fontWeight: "bold",
+              transition: "0.3s",
+            }}
+            onMouseEnter={(e) => (e.target.style.color = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.color = "#2563eb")}
+          >
+            {isSignup ? "Login" : "Sign up"}
+          </span>
+        </p>
+      </div>
     </div>
   );
 }
+
+const inputStyle = (theme) => ({
+  width: "100%",
+  padding: "12px",
+  marginBottom: "1rem",
+  borderRadius: "8px",
+  border: "1px solid #64748b",
+  background: theme === "dark" ? "#1e293b" : "#fff",
+  color: theme === "dark" ? "white" : "black",
+  outline: "none",
+  fontSize: "1rem",
+  transition: "0.3s",
+});
