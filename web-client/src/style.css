@@ -1,136 +1,107 @@
-/* -------------------------------------------------
-   LUXURY PREMIUM GLOBAL STYLES FOR KUMBO
-   Dark-first with soft-gold accents
-------------------------------------------------- */
+/* ===============================
+   KUMBO — Global Luxury Theme
+   Dark-first + Soft Gold Palette
+=================================*/
 
-/* GLOBAL VARIABLES */
+/* ---------- Font ----------- */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
 :root {
   --gold: #d4af37;
-  --gold-soft: rgba(212, 175, 55, 0.7);
-  --gold-dim: rgba(212, 175, 55, 0.15);
+  --gold-soft: rgba(212, 175, 55, 0.45);
+  --gold-light: rgba(212, 175, 55, 0.25);
 
-  --dark-bg: #0d0d0f;
-  --dark-card: #151518;
-  --dark-border: #252528;
-  --dark-text: #e6e6e6;
+  --dark-bg: #0e0e0e;
+  --dark-card: #181818;
+  --dark-soft: #222;
 
-  --light-bg: #f7f7f9;
+  --light-bg: #fafafa;
   --light-card: #ffffff;
-  --light-border: #dddddd;
-  --light-text: #222222;
+
+  --radius: 16px;
+  --speed: 0.35s;
 }
 
-/* DEFAULT THEME (dark) */
+/* ---------- THEME HANDLER ---------- */
 body[data-theme="dark"] {
   background: var(--dark-bg);
-  color: var(--dark-text);
+  color: white;
 }
 
 body[data-theme="light"] {
   background: var(--light-bg);
-  color: var(--light-text);
+  color: black;
 }
 
-/* RESET */
+/* Smooth transitions everywhere */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Inter", "Segoe UI", sans-serif;
+  transition: background var(--speed), color var(--speed), border var(--speed);
+  font-family: "Inter", sans-serif;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  outline: none;
+/* ---------- CENTERED LAYOUTS ---------- */
+.lux-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-/* -------------------------------------------------
-   LUXURY BUTTON STYLE (GLOBAL)
-------------------------------------------------- */
-.btn {
-  width: 100%;
-  padding: 14px;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 12px;
-  background: linear-gradient(to right, var(--gold), var(--gold-soft));
-  color: #000;
-  transition: 0.25s ease-in-out;
-}
-
-.btn:hover {
-  opacity: 0.85;
-  transform: translateY(-2px);
-}
-
-/* Logout, Save button gold styling */
-.btn-outline {
-  width: 100%;
-  padding: 14px;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 12px;
-  background: transparent;
-  border: 2px solid var(--gold-soft);
-  color: var(--gold);
-  transition: 0.25s;
-}
-
-.btn-outline:hover {
-  background: var(--gold-dim);
-}
-
-/* -------------------------------------------------
-   INPUT FIELDS
-------------------------------------------------- */
-input {
-  width: 100%;
-  padding: 14px;
-  margin: 8px 0 14px;
-  border-radius: 12px;
-  border: 1px solid var(--dark-border);
+/* ---------- LUXURY CARD ---------- */
+.lux-card {
   background: var(--dark-card);
-  color: var(--dark-text);
-  transition: 0.25s;
-}
-
-body[data-theme="light"] input {
-  background: var(--light-card);
-  color: var(--light-text);
-  border: 1px solid var(--light-border);
-}
-
-input:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 2px var(--gold-dim);
-}
-
-/* -------------------------------------------------
-   CARD CONTAINERS
-------------------------------------------------- */
-.card {
-  width: 100%;
-  max-width: 420px;
+  border-radius: var(--radius);
   padding: 32px;
-  margin: auto;
-  margin-top: 60px;
-  border-radius: 22px;
-  background: var(--dark-card);
-  border: 1px solid var(--dark-border);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(12px);
-  transition: 0.3s;
+  width: 92%;
+  max-width: 420px;
+  box-shadow: 0 0 22px rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--gold-light);
 }
 
-body[data-theme="light"] .card {
+body[data-theme="light"] .lux-card {
   background: var(--light-card);
-  border: 1px solid var(--light-border);
+  border: 1px solid var(--gold-light);
 }
 
-/* -------------------------------------------------
-   CHAT PAGE GLOBAL LAYOUT
-------------------------------------------------- */
+/* ---------- BUTTON ---------- */
+.lux-btn {
+  background: var(--gold);
+  color: black;
+  padding: 14px 22px;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 18px;
+  transition: transform var(--speed), box-shadow var(--speed);
+}
+
+.lux-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
+}
+
+/* ---------- INPUT ---------- */
+.lux-input {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--gold-light);
+  background: transparent;
+  margin-bottom: 16px;
+}
+
+body[data-theme="light"] .lux-input {
+  background: #f2f2f2;
+}
+
+/* ---------- GOLD TEXT ---------- */
+.gold {
+  color: var(--gold);
+}
+
+/* ---------- CHAT PAGE BASE ---------- */
 
 .chat-container {
   display: flex;
@@ -139,129 +110,65 @@ body[data-theme="light"] .card {
 }
 
 .chat-header {
-  padding: 20px;
+  padding: 18px;
   text-align: center;
   font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--gold);
-  border-bottom: 1px solid var(--dark-border);
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
+  font-weight: 600;
+  border-bottom: 1px solid var(--gold-light);
 }
 
-body[data-theme="light"] .chat-header {
-  background: rgba(255, 255, 255, 0.6);
-  border-bottom: 1px solid var(--light-border);
-}
-
-/* -------------------------------------------------
-   CHAT MESSAGES
-------------------------------------------------- */
-.messages {
+.chat-area {
   flex: 1;
-  overflow-y: auto;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .message {
-  padding: 12px 16px;
+  max-width: 72%;
+  padding: 12px 18px;
   margin-bottom: 14px;
-  border-radius: 14px;
-  max-width: 75%;
-  line-height: 1.4;
+  border-radius: var(--radius);
 }
 
-/* Other users’ messages */
-.message.other {
-  background: var(--dark-card);
-  border: 1px solid var(--dark-border);
-}
-
-body[data-theme="light"] .message.other {
-  background: var(--light-card);
-  border: 1px solid var(--light-border);
-}
-
-/* User’s own messages */
-.message.self {
-  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
-  color: #000;
+.message.user {
+  background: var(--gold);
+  color: black;
   margin-left: auto;
 }
 
-/* -------------------------------------------------
-   MESSAGE INPUT AREA
-------------------------------------------------- */
+.message.bot {
+  background: var(--dark-card);
+  border: 1px solid var(--gold-light);
+}
+
+body[data-theme="light"] .message.bot {
+  background: #fff;
+}
+
+/* ---------- INPUT AREA ---------- */
 .chat-input-area {
   display: flex;
-  gap: 10px;
-  padding: 12px 20px;
-  border-top: 1px solid var(--dark-border);
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(8px);
+  padding: 14px;
+  border-top: 1px solid var(--gold-light);
+  background: var(--dark-bg);
 }
 
 body[data-theme="light"] .chat-input-area {
-  background: rgba(255, 255, 255, 0.6);
-  border-top: 1px solid var(--light-border);
+  background: var(--light-card);
 }
 
 .chat-input-area input {
   flex: 1;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--gold-light);
+  margin-right: 10px;
 }
 
-.send-btn {
-  padding: 12px 20px;
-  border-radius: 12px;
+.chat-input-area button {
   background: var(--gold);
-  color: #000;
+  border: none;
+  padding: 0 22px;
+  border-radius: var(--radius);
   font-weight: 600;
-  transition: 0.25s;
-}
-
-.send-btn:hover {
-  opacity: 0.85;
-  transform: translateY(-2px);
-}
-
-/* -------------------------------------------------
-   PREMIUM PAGE TITLES
-------------------------------------------------- */
-.page-title {
-  font-size: 26px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 25px;
-  color: var(--gold);
-}
-
-/* -------------------------------------------------
-   THEME TOGGLE WRAPPER
-------------------------------------------------- */
-.theme-toggle-wrapper {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-}
-
-.theme-toggle-btn {
-  padding: 10px 16px;
-  border-radius: 12px;
-  background: var(--dark-card);
-  color: var(--gold);
-  border: 1px solid var(--gold-soft);
-  transition: 0.3s;
-}
-
-.theme-toggle-btn:hover {
-  transform: scale(1.05);
-}
-
-/* Light mode toggle */
-body[data-theme="light"] .theme-toggle-btn {
-  background: var(--light-card);
-  color: var(--gold);
-  border: 1px solid var(--light-border);
 }
