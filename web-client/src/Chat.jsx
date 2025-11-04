@@ -1,80 +1,132 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import io from "socket.io-client";
 import { motion } from "framer-motion";
-import { ArrowLeft, Send, Menu } from "lucide-react";
-import clsx from "clsx";
+import { LogOut, Send, Settings } from "lucide-react";
+
+const API_URL = "https://chat-app-y0st.onrender.com";
 
 export default function Chat() {
+  const user = JSON.parse(localStorage.getItem("user"));
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const [text, setText] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
+
+  const socketRef = useRef(null);
   const bottomRef = useRef(null);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    setMessages((prev) => [...prev, { from: "me", text: input }]);
-    setInput("");
-  };
+  // Connect to socket
+  useEffect(() => {
+    socketRef.current = io(API_URL, { auth: { token: user.token } });
+
+    socketRef.current.on("history", (msgs) => setMessages(msgs));
+    socketRef.current.on("message", (msg) =>
+      setMessages((prev) => [...prev, msg])
+    );
+
+    return () => socketRef.current.disconnect();
+  }, [user.token]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const sendMessage = () => {
+    if (!text.trim()) return;
+
+    socketRef.current.emit("send_message", { body: text });
+    setText("");
+  };
+
+  const logout = () => {
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
+
   return (
-    <div className="w-full h-screen bg-[#0A0A0A] text-white flex flex-col relative overflow-hidden">
+    <div className="chat-wrapper">
+
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        className="chat-header"
+        initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="p-4 flex items-center justify-between bg-[#0F0F0F]/60 backdrop-blur-xl border-b border-white/5"
+        transition={{ duration: 0.4 }}
       >
-        <div className="flex items-center gap-3">
-          <ArrowLeft className="w-5 h-5 text-white/80" />
-          <span className="font-semibold text-lg tracking-wide text-white">Kumbo Chat</span>
+        <div className="chat-title">
+          <h2>KUMBO</h2>
+          <p className="subtitle">{user?.name}</p>
         </div>
-        <Menu className="w-6 h-6 text-white/70" />
+
+        <div className="chat-actions">
+          <button className="icon-btn" onClick={() => setShowSettings(true)}>
+            <Settings size={20} />
+          </button>
+
+          <button className="icon-btn logout" onClick={logout}>
+            <LogOut size={20} />
+          </button>
+        </div>
       </motion.div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
-        {messages.map((msg, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className={clsx(
-              "max-w-[75%] px-4 py-3 rounded-2xl text-sm shadow-lg", {
-                "ml-auto bg-gradient-to-br from-yellow-500/20 to-yellow-700/20 border border-yellow-500/10 text-white":
-                  msg.from === "me",
-                "bg-white/5 border border-white/10 text-white/90": msg.from !== "me",
-              }
-            )}
-          >
-            {msg.text}
-          </motion.div>
-        ))}
+      <div className="chat-body">
+        {messages.map((msg, i) => {
+          const mine = msg.user === user.name;
+          return (
+            <motion.div
+              key={i}
+              className={`chat-bubble ${mine ? "mine" : ""}`}
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.25 }}
+            >
+              {!mine && <strong className="bubble-user">{msg.user}</strong>}
+              <p className="bubble-text">{msg.body}</p>
+            </motion.div>
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 
-      {/* Input Area */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-4 bg-[#0F0F0F]/60 backdrop-blur-xl border-t border-white/5 flex items-center gap-3"
-      >
+      {/* Input */}
+      <div className="chat-input-area">
         <input
-          className="flex-1 bg-white/5 border border-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-yellow-500/40"
-          placeholder="Type a message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          className="chat-input"
+          placeholder="Type your message..."
         />
-        <button
+
+        <motion.button
+          className="send-btn"
           onClick={sendMessage}
-          className="p-3 bg-gradient-to-br from-yellow-400/30 to-yellow-600/30 border border-yellow-500/20 rounded-xl hover:opacity-80 transition"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.9 }}
         >
-          <Send className="w-5 h-5 text-yellow-300" />
-        </button>
-      </motion.div>
+          <Send size={18} />
+        </motion.button>
+      </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="modal-overlay" onClick={() => setShowSettings(false)}>
+          <motion.div
+            className="modal-card"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            <h3 className="modal-title">Settings</h3>
+            <p className="modal-item">More settings coming soon…</p>
+
+            <button className="logout-btn" onClick={logout}>
+              Logout
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
