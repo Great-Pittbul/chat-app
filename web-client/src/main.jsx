@@ -8,12 +8,6 @@ import Settings from "./Settings";
 
 import "./style.css";
 
-/* ✅ INSTANT THEME BOOTSTRAP (prevents blank UI flash) */
-document.body.setAttribute(
-  "data-theme",
-  localStorage.getItem("theme") || "dark"
-);
-
 function App() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const user = JSON.parse(localStorage.getItem("user"));
@@ -35,7 +29,6 @@ function App() {
           element={user ? <Settings /> : <Navigate to="/" />}
         />
 
-        {/* fallback for broken links */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
