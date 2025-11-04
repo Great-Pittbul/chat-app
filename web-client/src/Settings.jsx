@@ -1,107 +1,47 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Moon, Sun, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import "./style.css";
 
 export default function Settings() {
-  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
 
-  useEffect(() => {
-    document.body.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+  const goBack = () => {
+    window.location.href = "/chat";
+  };
 
-  const logout = () => {
-    localStorage.removeItem("user");
-    navigate("/");
+  const applyTheme = (t) => {
+    setTheme(t);
+    document.body.setAttribute("data-theme", t);
+    localStorage.setItem("theme", t);
   };
 
   return (
-    <div className="lux-center">
-      <motion.div
-        initial={{ opacity: 0, y: 28 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: "easeOut" }}
-        className="lux-card"
-        style={{ textAlign: "center" }}
-      >
-        {/* Back Button */}
-        <button
-          onClick={() => navigate("/chat")}
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            position: "absolute",
-            left: "22px",
-            top: "22px",
-          }}
-        >
-          <ArrowLeft size={22} color="var(--gold)" />
-        </button>
+    <div className="settings-container">
+      <div className="settings-header">
+        <ArrowLeft className="icon-btn" onClick={goBack} />
+        <h2>Settings</h2>
+      </div>
 
-        {/* Title */}
-        <h2 className="gold" style={{ fontSize: 26, marginBottom: 30 }}>
-          Settings
-        </h2>
+      <div className="settings-card">
+        <h3>Theme</h3>
 
-        {/* Theme Toggle */}
-        <div
-          style={{
-            padding: "14px 20px",
-            borderRadius: "var(--radius)",
-            border: "1px solid var(--gold-light)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 26,
-          }}
-        >
-          <span style={{ fontSize: 16, fontWeight: 500 }}>Theme</span>
+        <div className="theme-options">
+          <button
+            className={theme === "dark" ? "theme-btn active" : "theme-btn"}
+            onClick={() => applyTheme("dark")}
+          >
+            Dark
+          </button>
 
           <button
-            onClick={() =>
-              setTheme(theme === "light" ? "dark" : "light")
-            }
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              background: "var(--gold)",
-              border: "none",
-              padding: "10px 18px",
-              borderRadius: "var(--radius)",
-              cursor: "pointer",
-              fontWeight: 600,
-            }}
+            className={theme === "light" ? "theme-btn active" : "theme-btn"}
+            onClick={() => applyTheme("light")}
           >
-            {theme === "light" ? (
-              <>
-                <Moon size={18} /> Dark
-              </>
-            ) : (
-              <>
-                <Sun size={18} /> Light
-              </>
-            )}
+            Light
           </button>
         </div>
-
-        {/* Logout */}
-        <button
-          onClick={logout}
-          className="lux-btn"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <LogOut size={18} /> Logout
-        </button>
-      </motion.div>
+      </div>
     </div>
   );
 }
