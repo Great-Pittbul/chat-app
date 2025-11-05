@@ -1,176 +1,136 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, LogOut, User, Sun, Moon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
-// ✅ Safe JSON parser
-function safeParseUser() {
-  try {
-    const raw = localStorage.getItem("user");
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed;
-  } catch (e) {
-    console.warn("Invalid user JSON — resetting.", e);
-    localStorage.removeItem("user");
-    return null;
-  }
-}
+import { X, Moon, Sun, LogOut } from "lucide-react";
 
 export default function Settings() {
-  const navigate = useNavigate();
-
-  // ✅ SAFELY load user so the app never crashes
-  const storedUser = safeParseUser();
-
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
-  const [name, setName] = useState(storedUser?.name || "");
+  const [dark, setDark] = useState(localStorage.getItem("theme") === "dark");
 
   useEffect(() => {
-    document.body.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    document.body.style.background = dark ? "#0f172a" : "#f8fafc";
+    document.body.style.color = dark ? "white" : "black";
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
 
-  const handleSaveName = () => {
-    if (!name.trim()) return;
-    const updatedUser = { ...storedUser, name };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    alert("✅ Name updated successfully!");
-  };
-
-  const handleLogout = () => {
+  const logout = () => {
     localStorage.removeItem("user");
-    navigate("/");
+    window.location.href = "/";
   };
 
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        background: theme === "dark" ? "#0f172a" : "#f1f5f9",
-        color: theme === "dark" ? "white" : "black",
+        alignItems: "center",
+        background: dark ? "#0f172a" : "#f1f5f9",
         transition: "0.3s",
-        position: "relative",
       }}
     >
-      {/* Back Button */}
-      <button
-        onClick={() => navigate("/chat")}
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "20px",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: theme === "dark" ? "#93c5fd" : "#2563eb",
-        }}
-      >
-        <ArrowLeft size={24} />
-      </button>
-
-      <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>⚙️ KUMBO Settings</h1>
-      <p style={{ opacity: 0.7, marginBottom: "2rem" }}>Manage your preferences</p>
-
-      {/* Name Update */}
       <div
         style={{
-          display: "flex",
-          gap: "0.5rem",
-          alignItems: "center",
-          marginBottom: "1.5rem",
+          width: "360px",
+          background: dark ? "#1e293b" : "white",
+          padding: "2rem",
+          borderRadius: "16px",
+          boxShadow: dark
+            ? "0 0 12px rgba(255,255,255,0.1)"
+            : "0 4px 12px rgba(0,0,0,0.1)",
+          position: "relative",
         }}
       >
-        <User size={20} />
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Enter new display name"
-          style={{
-            padding: "10px",
-            borderRadius: "8px",
-            border: "1px solid #64748b",
-            outline: "none",
-            background: theme === "dark" ? "#1e293b" : "white",
-            color: theme === "dark" ? "white" : "black",
-          }}
-        />
+        {/* Close button */}
         <button
-          onClick={handleSaveName}
+          onClick={() => (window.location.href = "/chat")}
           style={{
-            backgroundColor: "#2563eb",
+            position: "absolute",
+            top: "12px",
+            right: "12px",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: dark ? "#fca5a5" : "#ef4444",
+            transition: "0.3s",
+          }}
+        >
+          <X size={22} />
+        </button>
+
+        <h2
+          style={{
+            textAlign: "center",
+            marginBottom: "1.5rem",
+            fontSize: "1.4rem",
+            fontWeight: "bold",
+          }}
+        >
+          ⚙️ App Settings
+        </h2>
+
+        {/* Theme toggle */}
+        <button
+          onClick={() => setDark(!dark)}
+          style={{
+            width: "100%",
+            padding: "12px",
+            background: dark ? "#2563eb" : "#3b82f6",
             color: "white",
             border: "none",
-            padding: "10px 14px",
-            borderRadius: "8px",
-            fontWeight: "bold",
+            borderRadius: "10px",
             cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            marginBottom: "1rem",
             transition: "0.3s",
           }}
           onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = dark ? "#2563eb" : "#3b82f6")}
         >
-          Save
+          {dark ? <Sun size={18} /> : <Moon size={18} />}
+          Toggle {dark ? "Light" : "Dark"} Mode
         </button>
+
+        {/* Logout */}
+        <button
+          onClick={logout}
+          style={{
+            width: "100%",
+            padding: "12px",
+            background: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            transition: "0.3s",
+          }}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = "#b91c1c")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = "#ef4444")}
+        >
+          <LogOut size={18} />
+          Logout
+        </button>
+
+        {/* Footer */}
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: "1.5rem",
+            fontSize: "0.85rem",
+            color: dark ? "#9ca3af" : "#6b7280",
+          }}
+        >
+          © {new Date().getFullYear()} UCEM Chat App
+        </p>
       </div>
-
-      {/* Theme Toggle */}
-      <button
-        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-        style={{
-          width: "250px",
-          padding: "10px",
-          marginBottom: "1rem",
-          background: theme === "dark" ? "#2563eb" : "#3b82f6",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "0.3s",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0.5rem",
-        }}
-        onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
-        onMouseLeave={(e) =>
-          (e.target.style.backgroundColor =
-            theme === "dark" ? "#2563eb" : "#3b82f6")
-        }
-      >
-        {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        Toggle {theme === "dark" ? "Light" : "Dark"} Mode
-      </button>
-
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
-        style={{
-          width: "250px",
-          padding: "10px",
-          background: "#ef4444",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "0.3s",
-          fontWeight: "bold",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0.5rem",
-        }}
-        onMouseEnter={(e) => (e.target.style.backgroundColor = "#b91c1c")}
-        onMouseLeave={(e) => (e.target.style.backgroundColor = "#ef4444")}
-      >
-        <LogOut size={18} />
-        Logout
-      </button>
     </div>
   );
 }
