@@ -1,142 +1,275 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Settings, LogOut, SendHorizontal } from "lucide-react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import io from "socket.io-client";
+import { Sun, Moon, Settings, X } from "lucide-react";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
 
-// ✅ Safe JSON parser (prevents crash)
-function safeParseUser() {
-  try {
-    const raw = localStorage.getItem("user");
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed;
-  } catch (e) {
-    console.warn("Invalid user JSON reset:", e);
-    localStorage.removeItem("user");
-    return null;
-  }
-}
-
 export default function Chat() {
+  const user = JSON.parse(localStorage.getItem("user"));
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
+  const [text, setText] = useState("");
+  const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
+  const [showSettings, setShowSettings] = useState(false);
+  const socketRef = useRef(null);
+  const chatEndRef = useRef(null);
 
-  // ✅ SAFE USER LOAD
-  const user = safeParseUser();
-
-  const bottomRef = useRef(null);
-
-  // ✅ Scroll to bottom
+  // Connect socket
   useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    socketRef.current = io(API_URL, {
+      auth: { token: user.token },
+    });
+
+    socketRef.current.on("history", (msgs) => setMessages(msgs));
+    socketRef.current.on("message", (msg) => setMessages((prev) => [...prev, msg]));
+
+    return () => socketRef.current.disconnect();
+  }, [user.token]);
+
+  // Scroll to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ✅ Load chat history
+  // Toggle theme
   useEffect(() => {
-    async function loadMessages() {
-      try {
-        const res = await fetch(`${API_URL}/messages`);
-        const data = await res.json();
-        setMessages(data);
-      } catch (err) {
-        console.error("Failed to load messages:", err);
-      }
+    document.body.style.background = dark ? "#0f172a" : "#f8fafc";
+    document.body.style.color = dark ? "white" : "black";
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
+  const sendMessage = () => {
+    if (text.trim()) {
+      socketRef.current.emit("send_message", { body: text });
+      setText("");
     }
-    loadMessages();
-  }, []);
+  };
 
-  // ✅ Send message
-  async function sendMessage() {
-    if (!input.trim()) return;
-
-    const newMsg = {
-      text: input,
-      sender: user?.name || "Unknown User",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setMessages((prev) => [...prev, newMsg]);
-    setInput("");
-    setTyping(true);
-
-    try {
-      await fetch(`${API_URL}/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newMsg),
-      });
-    } catch (err) {
-      console.error("Send error:", err);
-    }
-
-    setTimeout(() => setTyping(false), 800);
-  }
-
-  // ✅ Enter key send
-  function handleKey(e) {
-    if (e.key === "Enter") sendMessage();
-  }
-
-  // ✅ Logout safely
-  function logout() {
+  const logout = () => {
     localStorage.removeItem("user");
     window.location.href = "/";
-  }
+  };
 
   return (
-    <div className="chat-container">
-      {/* ✅ Top bar */}
-      <header className="chat-header">
-        <h2 className="app-title">KUMBO</h2>
+    <div
+      style={{
+        maxWidth: "700px",
+        margin: "0 auto",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        background: dark ? "#1e293b" : "white",
+        boxShadow: dark ? "0 0 10px rgba(255,255,255,0.1)" : "0 0 10px rgba(0,0,0,0.1)",
+        borderRadius: "12px",
+        overflow: "hidden",
+      }}
+    >
+      {/* Top Bar */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "1rem",
+          background: dark ? "#0f172a" : "#f1f5f9",
+          borderBottom: dark ? "1px solid #334155" : "1px solid #e2e8f0",
+        }}
+      >
+        <h2>{user?.name}'s Chat</h2>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          <button
+            onClick={() => setDark(!dark)}
+            title="Toggle Theme"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: dark ? "#facc15" : "#334155",
+              transition: "0.3s",
+            }}
+          >
+            {dark ? <Sun size={22} /> : <Moon size={22} />}
+          </button>
 
-        <div className="header-actions">
-          <Link to="/settings" className="settings-btn">
+          <button
+            onClick={() => setShowSettings(true)}
+            title="Settings"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: dark ? "#93c5fd" : "#334155",
+              transition: "0.3s",
+            }}
+          >
             <Settings size={22} />
-          </Link>
-
-          <button onClick={logout} className="logout-btn">
-            <LogOut size={22} />
           </button>
         </div>
-      </header>
+      </div>
 
-      {/* ✅ Messages */}
-      <div className="messages-area">
+      {/* Chat Messages */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "1rem",
+          background: dark ? "#1e293b" : "#f8fafc",
+        }}
+      >
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`message ${msg.sender === user?.name ? "my-msg" : "other-msg"}`}
+            style={{
+              background:
+                msg.user === user.name
+                  ? dark
+                    ? "#2563eb"
+                    : "#3b82f6"
+                  : dark
+                  ? "#334155"
+                  : "#e2e8f0",
+              color: "white",
+              padding: "8px 12px",
+              borderRadius: "10px",
+              margin: "8px 0",
+              alignSelf: msg.user === user.name ? "flex-end" : "flex-start",
+              maxWidth: "80%",
+            }}
           >
-            <p className="msg-text">{msg.text}</p>
-            <span className="msg-time">{msg.time}</span>
+            <strong>{msg.user}</strong>
+            <p style={{ margin: "5px 0 0", fontSize: "0.95rem" }}>{msg.body}</p>
           </div>
         ))}
-
-        {typing && <div className="typing">Typing...</div>}
-
-        <div ref={bottomRef}></div>
+        <div ref={chatEndRef} />
       </div>
 
-      {/* ✅ Input area */}
-      <div className="input-area">
+      {/* Input Area */}
+      <div
+        style={{
+          display: "flex",
+          padding: "1rem",
+          background: dark ? "#0f172a" : "#f1f5f9",
+          borderTop: dark ? "1px solid #334155" : "1px solid #e2e8f0",
+        }}
+      >
         <input
           type="text"
-          className="chat-input"
-          placeholder="Type a message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKey}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder="Type your message..."
+          style={{
+            flex: 1,
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid #64748b",
+            outline: "none",
+            background: dark ? "#1e293b" : "white",
+            color: dark ? "white" : "black",
+            marginRight: "0.5rem",
+          }}
         />
-
-        <button className="send-btn" onClick={sendMessage}>
-          <SendHorizontal size={22} />
+        <button
+          onClick={sendMessage}
+          style={{
+            backgroundColor: "#2563eb",
+            color: "white",
+            border: "none",
+            padding: "10px 16px",
+            borderRadius: "8px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            transition: "0.3s",
+          }}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
+        >
+          Send
         </button>
       </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 999,
+          }}
+          onClick={() => setShowSettings(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: dark ? "#1e293b" : "white",
+              padding: "2rem",
+              borderRadius: "12px",
+              width: "300px",
+              textAlign: "center",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+              position: "relative",
+            }}
+          >
+            <button
+              onClick={() => setShowSettings(false)}
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: dark ? "#fca5a5" : "#ef4444",
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            <h3 style={{ marginBottom: "1rem" }}>Settings</h3>
+
+            <button
+              onClick={() => setDark(!dark)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                marginBottom: "1rem",
+                background: dark ? "#2563eb" : "#3b82f6",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "0.3s",
+              }}
+              onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
+            >
+              Toggle {dark ? "Light" : "Dark"} Mode
+            </button>
+
+            <button
+              onClick={logout}
+              style={{
+                width: "100%",
+                padding: "10px",
+                background: "#ef4444",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "0.3s",
+                fontWeight: "bold",
+              }}
+              onMouseEnter={(e) => (e.target.style.backgroundColor = "#b91c1c")}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = "#ef4444")}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
