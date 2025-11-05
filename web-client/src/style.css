@@ -3,6 +3,7 @@
    Dark-first + Soft Gold Palette
 =================================*/
 
+/* ---------- Font ----------- */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 :root {
@@ -10,8 +11,9 @@
   --gold-soft: rgba(212, 175, 55, 0.45);
   --gold-light: rgba(212, 175, 55, 0.25);
 
-  --dark-bg: #0d0d0d;
+  --dark-bg: #0e0e0e;
   --dark-card: #181818;
+  --dark-soft: #222;
 
   --light-bg: #fafafa;
   --light-card: #ffffff;
@@ -20,7 +22,13 @@
   --speed: 0.35s;
 }
 
-/* ---------- THEME ---------- */
+/* ---------- DEFAULT FALLBACK (IMPORTANT FIX) ---------- */
+body:not([data-theme]) {
+  background: var(--dark-bg);
+  color: white;
+}
+
+/* ---------- THEME HANDLER ---------- */
 body[data-theme="dark"] {
   background: var(--dark-bg);
   color: white;
@@ -31,12 +39,13 @@ body[data-theme="light"] {
   color: black;
 }
 
+/* Smooth transitions everywhere */
 * {
   transition: background var(--speed), color var(--speed), border var(--speed);
   font-family: "Inter", sans-serif;
 }
 
-/* ---------- LAYOUT ---------- */
+/* ---------- CENTERED LAYOUTS ---------- */
 .lux-center {
   display: flex;
   justify-content: center;
@@ -44,7 +53,7 @@ body[data-theme="light"] {
   min-height: 100vh;
 }
 
-/* ---------- CARD ---------- */
+/* ---------- LUXURY CARD ---------- */
 .lux-card {
   background: var(--dark-card);
   border-radius: var(--radius);
@@ -57,6 +66,7 @@ body[data-theme="light"] {
 
 body[data-theme="light"] .lux-card {
   background: var(--light-card);
+  border: 1px solid var(--gold-light);
 }
 
 /* ---------- BUTTON ---------- */
@@ -64,17 +74,18 @@ body[data-theme="light"] .lux-card {
   background: var(--gold);
   color: black;
   padding: 14px 22px;
-  border-radius: var(--radius);
-  width: 100%;
   border: none;
+  border-radius: var(--radius);
   font-weight: 600;
   cursor: pointer;
-  margin-top: 16px;
+  width: 100%;
+  margin-top: 18px;
+  transition: transform var(--speed), box-shadow var(--speed);
 }
 
 .lux-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
 }
 
 /* ---------- INPUT ---------- */
@@ -83,15 +94,21 @@ body[data-theme="light"] .lux-card {
   padding: 14px;
   border-radius: var(--radius);
   border: 1px solid var(--gold-light);
-  margin-bottom: 16px;
   background: transparent;
+  margin-bottom: 16px;
 }
 
 body[data-theme="light"] .lux-input {
   background: #f2f2f2;
 }
 
-/* ---------- CHAT PAGE ---------- */
+/* ---------- GOLD TEXT ---------- */
+.gold {
+  color: var(--gold);
+}
+
+/* ---------- CHAT PAGE BASE ---------- */
+
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -112,7 +129,6 @@ body[data-theme="light"] .lux-input {
   overflow-y: auto;
 }
 
-/* ---------- MESSAGES ---------- */
 .message {
   max-width: 72%;
   padding: 12px 18px;
