@@ -1,6 +1,7 @@
-                                                                                                                                                      import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
-import { Sun, Moon, Settings, X } from "lucide-react";
+import { Sun, Moon, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
 
@@ -9,11 +10,10 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
-  const [showSettings, setShowSettings] = useState(false);
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
+  const navigate = useNavigate();
 
-  // Connect socket
   useEffect(() => {
     socketRef.current = io(API_URL, {
       auth: { token: user.token },
@@ -25,12 +25,10 @@ export default function Chat() {
     return () => socketRef.current.disconnect();
   }, [user.token]);
 
-  // Scroll to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Toggle theme
   useEffect(() => {
     document.body.style.background = dark ? "#0f172a" : "#f8fafc";
     document.body.style.color = dark ? "white" : "black";
@@ -42,11 +40,6 @@ export default function Chat() {
       socketRef.current.emit("send_message", { body: text });
       setText("");
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("user");
-    window.location.href = "/";
   };
 
   return (
@@ -91,7 +84,7 @@ export default function Chat() {
           </button>
 
           <button
-            onClick={() => setShowSettings(true)}
+            onClick={() => navigate("/settings")}
             title="Settings"
             style={{
               background: "none",
@@ -186,91 +179,6 @@ export default function Chat() {
           Send
         </button>
       </div>
-
-      {/* Settings Modal */}
-      {showSettings && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 999,
-          }}
-          onClick={() => setShowSettings(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: dark ? "#1e293b" : "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              width: "300px",
-              textAlign: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-              position: "relative",
-            }}
-          >
-            <button
-              onClick={() => setShowSettings(false)}
-              style={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: dark ? "#fca5a5" : "#ef4444",
-              }}
-            >
-              <X size={20} />
-            </button>
-
-            <h3 style={{ marginBottom: "1rem" }}>Settings</h3>
-
-            <button
-              onClick={() => setDark(!dark)}
-              style={{
-                width: "100%",
-                padding: "10px",
-                marginBottom: "1rem",
-                background: dark ? "#2563eb" : "#3b82f6",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                transition: "0.3s",
-              }}
-              onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
-            >
-              Toggle {dark ? "Light" : "Dark"} Mode
-            </button>
-
-            <button
-              onClick={logout}
-              style={{
-                width: "100%",
-                padding: "10px",
-                background: "#ef4444",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                transition: "0.3s",
-                fontWeight: "bold",
-              }}
-              onMouseEnter={(e) => (e.target.style.backgroundColor = "#b91c1c")}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#ef4444")}
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-                                              
