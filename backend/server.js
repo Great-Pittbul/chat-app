@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cors from "cors";
-import fs from "fs";  // ✅ added for Render secret file support
+import fs from "fs";
 
 dotenv.config();
 
@@ -17,23 +17,22 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(cors());
 app.use(express.json());
 
-// ✅ Load JWT Secret (works for both local and Render)
+// ✅ Load JWT Secret
 const JWT_SECRET =
   process.env.JWT_SECRET ||
   fs.readFileSync("/etc/secrets/JWT_SECRET", "utf8").trim();
 
-// ✅ Connect MongoDB
+// ✅ Connect Mongo
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB error:", err));
 
-// ----- SCHEMAS -----
+// ✅ SCHEMAS
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
-  avatar: String,
 });
 
 const messageSchema = new mongoose.Schema({
@@ -45,30 +44,36 @@ const messageSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 const Message = mongoose.model("Message", messageSchema);
 
-// ----- AUTH -----
+// ✅ SIGNUP
 app.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
+
   try {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ error: "Email already exists" });
 
-    const hashed = await bcrypt.hash(password, 10);
-    await User.create({ name, email, password: hashed });
+    await User.create({
+      name,
+      email,
+      password: await bcrypt.hash(password, 10),
+    });
+
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Signup failed" });
   }
 });
 
+// ✅ LOGIN
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(400).json({ error: "Invalid credentials" });
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(400).json({ error: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: user._id, name: user.name, email: user.email },
@@ -78,45 +83,64 @@ app.post("/login", async (req, res) => {
 
     res.json({ token, name: user.name });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Login failed" });
   }
 });
 
-// ----- SOCKET CHAT -----
-io.use((socket, next) => {
-  const token = socket.handshake.auth?.token;
-  if (!token) return next(new Error("No token"));
+// ✅ FETCH MESSAGES (for your React frontend)
+app.get("/messages", async (req, res) => {
   try {
-    const user = jwt.verify(token, JWT_SECRET);
-    socket.user = user;
+    const msgs = await Message.find().sort({ created_at: 1 }).limit(50);
+    res.json(msgs);
+  } catch {
+    res.status(500).json({ error: "Failed to fetch messages" });
+  }
+});
+
+// ✅ SEND MESSAGE (HTTP fallback)
+app.post("/send", async (req, res) => {
+  try {
+    const { user, body } = req.body;
+    const msg = await Message.create({ user, body });
+
+    io.emit("message", msg);
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: "Failed to send message" });
+  }
+});
+
+// ✅ SOCKET AUTH
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("No token"));
+    socket.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch {
     next(new Error("Invalid token"));
   }
 });
 
+// ✅ SOCKET EVENTS
 io.on("connection", async (socket) => {
-  console.log(`💬 ${socket.user.name} connected`);
+  console.log("✅ Socket connected:", socket.user.name);
 
-  // Send last 20 messages
-  const lastMessages = await Message.find().sort({ created_at: 1 }).limit(20);
-  socket.emit("history", lastMessages);
+  socket.emit("history", await Message.find().sort({ created_at: 1 }).limit(50));
 
-  socket.on("send_message", async (msg) => {
-    const message = await Message.create({
+  socket.on("send_message", async (data) => {
+    const msg = await Message.create({
       user: socket.user.name,
-      body: msg.body,
+      body: data.body,
     });
-    io.emit("message", message);
-  });
 
-  socket.on("disconnect", () => {
-    console.log(`❌ ${socket.user.name} disconnected`);
+    io.emit("message", msg);
   });
 });
 
-app.get("/", (req, res) => res.send("✅ Backend with Auth & Chat is live"));
+app.get("/", (req, res) => res.send("✅ Backend is running"));
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));
+// ✅ Startup
+server.listen(process.env.PORT || 3000, () =>
+  console.log("🚀 Server running")
+);
