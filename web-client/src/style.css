@@ -1,158 +1,149 @@
+/* Global & Theme variables (light-first) */
+:root{
+  --bg-light: linear-gradient(180deg,#eef8ff,#f8fbff);
+  --bg-dark: linear-gradient(180deg,#071326,#091923);
+  --card-bg-light: rgba(255,255,255,0.9);
+  --card-bg-dark: rgba(4,12,20,0.7);
+  --primary-gradient: linear-gradient(90deg,#06b6d4,#8b5cf6); /* turquoise -> violet */
+  --accent-gold: linear-gradient(90deg,#ffd166,#ffb86b);
+  --glass-border: rgba(255,255,255,0.6);
+  --muted: #64748b;
+  --radius-lg: 14px;
+  font-synthesis: none;
+}
+
+/* Basic body */
 body {
   margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: #0b0f18;
-  color: #fff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-light);
+  color: #0b1220;
+  transition: background 300ms ease, color 300ms ease;
 }
 
-.auth-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+/* when dark mode manually set via JS add data-theme="dark" to body */
+body[data-theme="dark"]{
+  background: var(--bg-dark);
+  color: #dff7f4;
 }
 
-.k-logo-wrapper {
-  text-align: center;
-  margin-bottom: 20px;
+/* centered app container helper */
+.app-centered {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
-.k-logo {
-  width: 100px;
-  height: 100px;
-  background: #111827;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 60px;
-  font-weight: bold;
-  color: #4da6ff;
-  box-shadow: 0 10px 35px rgba(77, 166, 255, 0.55);
-  animation: fadeIn 1.2s ease;
-}
-
-.brand {
-  margin-top: 10px;
-  letter-spacing: 4px;
+/* KUMBO logo text (gradient + glow) */
+.kumbo-logo {
+  font-weight: 800;
+  letter-spacing: 0.6px;
   font-size: 28px;
-  font-weight: 700;
-  color: #e2e8f0;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  text-shadow: 0 10px 30px rgba(139,92,246,0.06);
+}
+.kumbo-tagline {
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(11,18,32,0.65);
+}
+body[data-theme="dark"] .kumbo-tagline {
+  color: rgba(220,246,240,0.6);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.85); }
-  to { opacity: 1; transform: scale(1); }
-}
-
+/* Auth card */
 .auth-card {
-  background: #111827;
-  padding: 30px;
-  border-radius: 16px;
-  width: 330px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-  animation: fadeIn 0.8s ease;
+  width: 380px;
+  max-width: 92vw;
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-sizing: border-box;
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--card-bg-light);
+  box-shadow: 0 10px 40px rgba(11,18,32,0.06);
+  transition: background 240ms ease, border 240ms ease;
+}
+body[data-theme="dark"] .auth-card {
+  background: var(--card-bg-dark);
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 12px 48px rgba(3,10,18,0.6);
 }
 
-.auth-card input {
+/* inputs */
+.input {
   width: 100%;
-  margin-top: 12px;
-  padding: 12px;
+  padding: 12px 14px;
+  margin: 8px 0;
   border-radius: 10px;
-  border: none;
+  border: 1px solid rgba(6,10,15,0.06);
+  background: rgba(255,255,255,0.85);
   outline: none;
-  background: #1f2937;
-  color: #fff;
+  font-size: 14px;
+  color: inherit;
+  transition: box-shadow .18s ease, transform .12s ease, border-color .12s ease;
+}
+body[data-theme="dark"] .input {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.input:focus {
+  box-shadow: 0 8px 30px rgba(6,182,212,0.08);
+  transform: translateY(-1px);
+  border-color: rgba(6,182,212,0.6);
 }
 
-.auth-btn {
-  margin-top: 20px;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  background: #2563eb;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.toggle {
-  margin-top: 12px;
-  text-align: center;
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-.chat-body {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.chat-header {
-  padding: 15px;
-  background: #111827;
-  display: flex;
-  justify-content: space-between;
+/* primary button */
+.btn {
+  display: inline-flex;
   align-items: center;
-}
-
-.head-icons svg {
-  font-size: 22px;
-  margin-left: 15px;
-  cursor: pointer;
-}
-
-.chat-messages {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.msg {
-  max-width: 80%;
-  padding: 10px 14px;
-  margin-bottom: 10px;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  width: 100%;
   border-radius: 12px;
-  font-size: 15px;
-}
-
-.my-msg {
-  background: #3b82f6;
-  color: white;
-  margin-left: auto;
-}
-
-.their-msg {
-  background: #1f2937;
-  color: #e5e7eb;
-  margin-right: auto;
-}
-
-.chat-input-area {
-  display: flex;
-  padding: 15px;
-  background: #111827;
-}
-
-.chat-input-area input {
-  flex: 1;
-  padding: 12px;
-  border-radius: 10px;
   border: none;
-  background: #1f2937;
-  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  color: #042b2a;
+  background: var(--accent-gold);
+  box-shadow: 0 10px 28px rgba(255,183,77,0.12), inset 0 -2px 8px rgba(0,0,0,0.04);
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
+.btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(255,183,77,0.16); }
+.btn:active { transform: translateY(-1px); }
 
-.chat-input-area button {
-  width: 60px;
-  margin-left: 10px;
-  border: none;
+/* secondary (ghost) button */
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(6,10,15,0.04);
+  padding: 10px 12px;
   border-radius: 10px;
-  background: #2563eb;
-  color: white;
-  font-size: 20px;
   cursor: pointer;
 }
+
+/* small text helpers */
+.help-text {
+  font-size: 12px;
+  color: rgba(11,18,32,0.55);
+}
+body[data-theme="dark"] .help-text { color: rgba(220,246,240,0.5); }
+
+/* chat container basic */
+.chat-shell {
+  width: 980px;
+  max-width: 96%;
+  margin: 2rem auto;
+}
+
+/* message bubble helpers (already used inline in Chat.jsx) */
