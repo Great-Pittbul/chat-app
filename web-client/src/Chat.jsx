@@ -1,97 +1,85 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FiSend, FiSettings, FiLogOut } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { io } from "socket.io-client";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
 
-function safeParseUser() {
-  try {
-    return JSON.parse(localStorage.getItem("user"));
-  } catch {
-    return null;
-  }
-}
-
 export default function Chat() {
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  const socket = useRef(null);
+  const bottom = useRef(null);
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const bottomRef = useRef(null);
-  const user = safeParseUser();
 
   useEffect(() => {
-    fetch(`${API_URL}/messages`)
-      .then((res) => res.json())
-      .then((data) => setMessages(data));
+    socket.current = io(API_URL, {
+      auth: { token },
+    });
+
+    socket.current.on("history", (data) => setMessages(data));
+    socket.current.on("message", (msg) =>
+      setMessages((prev) => [...prev, msg])
+    );
+
+    return () => socket.current.disconnect();
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  async function sendMessage() {
+  function send() {
     if (!input.trim()) return;
-
-    const msg = {
-      text: input,
-      sender: user?.name,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setMessages((prev) => [...prev, msg]);
+    socket.current.emit("send_message", { body: input });
     setInput("");
+  }
 
-    await fetch(`${API_URL}/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(msg),
-    });
+  function logout() {
+    localStorage.clear();
+    window.location.href = "/";
   }
 
   return (
-    <div className="chat-bg">
+    <div className="chat-body">
       <header className="chat-header">
-        <h2 className="chat-title">KUMBO</h2>
+        <h2>KUMBO</h2>
 
-        <div className="chat-header-actions">
-          <Link to="/settings" className="icon-btn">
+        <div className="head-icons">
+          <Link to="/settings">
             <FiSettings />
           </Link>
-
-          <button
-            className="icon-btn"
-            onClick={() => {
-              localStorage.removeItem("user");
-              window.location.href = "/";
-            }}
-          >
-            <FiLogOut />
-          </button>
+          <FiLogOut onClick={logout} />
         </div>
       </header>
 
-      <div className="chat-body">
-        {messages.map((m, i) => (
+      <div className="chat-messages">
+        {messages.map((msg, i) => (
           <div
             key={i}
-            className={`chat-bubble ${m.sender === user?.name ? "mine" : "theirs"}`}
+            className={`msg ${
+              msg.user === user.name ? "my-msg" : "their-msg"
+            }`}
           >
-            <p>{m.text}</p>
-            <span>{m.time}</span>
+            <p>{msg.body}</p>
+            <span>{msg.user}</span>
           </div>
         ))}
 
-        <div ref={bottomRef}></div>
+        <div ref={bottom}></div>
       </div>
 
       <div className="chat-input-area">
         <input
-          className="chat-input"
-          placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onKeyDown={(e) => e.key === "Enter" && send()}
+          placeholder="Message…"
         />
-        <button className="send-btn" onClick={sendMessage}>
+        <button onClick={send}>
           <FiSend />
         </button>
       </div>
