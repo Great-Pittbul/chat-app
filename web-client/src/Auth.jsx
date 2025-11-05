@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import KumboLogo from "./components/KumboLogo";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
@@ -8,97 +9,76 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  async function handleAuth() {
+    const endpoint = isSignup ? "/signup" : "/login";
+
+    if (isSignup && !name.trim()) return alert("Enter your name");
 
     try {
-      const endpoint = isSignup ? "/signup" : "/login";
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          isSignup
-            ? { name, email, password }
-            : { email, password }
+          isSignup ? { name, email, password } : { email, password }
         ),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
+      if (!data.success) return alert(data.message);
 
-      if (isSignup) {
-        alert("Signup successful. Please log in.");
-        setIsSignup(false);
-      } else {
-        localStorage.setItem("user", JSON.stringify(data));
-        window.location.href = "/chat";
-      }
+      localStorage.setItem("user", JSON.stringify(data.user));
+      window.location.href = "/chat";
     } catch (err) {
-      setError(err.message);
+      alert("Failed to connect.");
     }
-
-    setLoading(false);
   }
 
   return (
     <div className="auth-bg">
-      <div className="auth-box glass">
-        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-          <KumboLogo size={70} />
-        </div>
+      <motion.div
+        className="auth-card"
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <KumboLogo size={80} />
+        <h2 className="auth-title">{isSignup ? "Create Account" : "Welcome Back"}</h2>
 
-        <h1 className="auth-title">Welcome to KUMBO</h1>
-
-        <p className="auth-sub">{isSignup ? "Create Account" : "Sign In"}</p>
-
-        <form onSubmit={handleSubmit}>
-          {isSignup && (
-            <input
-              className="input"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          )}
-
+        {isSignup && (
           <input
-            className="input"
-            placeholder="Email Address"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            className="auth-input"
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
+        )}
 
-          <input
-            className="input"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+        <input
+          className="auth-input"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-          {error && <p className="error">{error}</p>}
+        <input
+          className="auth-input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-          <button className="btn-primary" disabled={loading}>
-            {loading ? "Please wait..." : isSignup ? "Sign Up" : "Log In"}
-          </button>
-        </form>
+        <button className="auth-btn" onClick={handleAuth}>
+          {isSignup ? "Sign Up" : "Login"}
+        </button>
 
-        <p className="switch-auth">
-          {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
-          <span onClick={() => setIsSignup(!isSignup)}>
-            {isSignup ? "Login" : "Register"}
-          </span>
+        <p
+          className="auth-switch"
+          onClick={() => setIsSignup(!isSignup)}
+        >
+          {isSignup ? "Already have an account?" : "Create an account"}
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }
