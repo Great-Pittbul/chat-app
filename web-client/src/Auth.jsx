@@ -1,84 +1,87 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import KumboLogo from "./components/KumboLogo";
+import { useNavigate } from "react-router-dom";
+import Kumbologo from "./components/KumboLogo.jsx";
 
-const API_URL = "https://chat-app-y0st.onrender.com";
+const API_URL = "https://chat-backend-kumbo.onrender.com";
 
 export default function Auth() {
+  const nav = useNavigate();
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  async function handleAuth() {
-    const endpoint = isSignup ? "/signup" : "/login";
+  const toggle = () => setIsSignup(!isSignup);
 
-    if (isSignup && !name.trim()) return alert("Enter your name");
+  async function submit() {
+    const endpoint = isSignup ? "/signup" : "/login";
 
     try {
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          isSignup ? { name, email, password } : { email, password }
+          isSignup
+            ? { name, email, password }
+            : { email, password }
         ),
       });
 
       const data = await res.json();
-      if (!data.success) return alert(data.message);
+      if (!data.token && !isSignup) {
+        alert(data.error || "Login failed");
+        return;
+      }
 
-      localStorage.setItem("user", JSON.stringify(data.user));
-      window.location.href = "/chat";
+      if (!isSignup) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify({ name: data.name }));
+        nav("/chat");
+      } else {
+        alert("Account created. Please login.");
+        setIsSignup(false);
+      }
     } catch (err) {
-      alert("Failed to connect.");
+      console.error(err);
     }
   }
 
   return (
-    <div className="auth-bg">
-      <motion.div
-        className="auth-card"
-        initial={{ opacity: 0, scale: 0.7 }}
-        animate={{ opacity: 1, scale: 1 }}
-      >
-        <KumboLogo size={80} />
-        <h2 className="auth-title">{isSignup ? "Create Account" : "Welcome Back"}</h2>
+    <div className="auth-container">
+      <Kumbologo />
+
+      <div className="auth-card">
+        <h2>{isSignup ? "Create Account" : "Login"}</h2>
 
         {isSignup && (
           <input
-            className="auth-input"
-            placeholder="Full Name"
+            placeholder="Full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         )}
 
         <input
-          className="auth-input"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
-          className="auth-input"
-          type="password"
           placeholder="Password"
+          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button className="auth-btn" onClick={handleAuth}>
-          {isSignup ? "Sign Up" : "Login"}
+        <button className="auth-btn" onClick={submit}>
+          {isSignup ? "Sign up" : "Login"}
         </button>
 
-        <p
-          className="auth-switch"
-          onClick={() => setIsSignup(!isSignup)}
-        >
-          {isSignup ? "Already have an account?" : "Create an account"}
+        <p className="toggle" onClick={toggle}>
+          {isSignup ? "Already have an account? Login" : "Create an account"}
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }
