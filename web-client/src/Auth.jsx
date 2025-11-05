@@ -21,8 +21,12 @@ export default function Auth() {
       const endpoint = isSignup ? "/signup" : "/login";
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
-        headers: { "Content-Type":application/json" },
-        body: JSON.stringify(isSignup ? { name, email, password } : { email, password })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          isSignup
+            ? { name, email, password }
+            : { email, password }
+        ),
       });
 
       const data = await res.json();
@@ -77,7 +81,11 @@ export default function Auth() {
           {error && <p className="error">{error}</p>}
 
           <button type="submit" disabled={loading}>
-            {loading ? "Please wait..." : isSignup ? "Sign Up" : "Login"}
+            {loading
+              ? "Please wait..."
+              : isSignup
+              ? "Sign Up"
+              : "Login"}
           </button>
         </form>
 
