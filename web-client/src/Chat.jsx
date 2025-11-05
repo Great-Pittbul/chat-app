@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FiSettings, FiLogOut, FiSend } from "react-icons/fi";
+import { Settings, LogOut, SendHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
@@ -96,10 +96,11 @@ export default function Chat() {
 
         <div className="header-actions">
           <Link to="/settings" className="settings-btn">
-            <FiSettings />
+            <Settings size={22} />
           </Link>
+
           <button onClick={logout} className="logout-btn">
-            <FiLogOut />
+            <LogOut size={22} />
           </button>
         </div>
       </header>
@@ -121,7 +122,7 @@ export default function Chat() {
         <div ref={bottomRef}></div>
       </div>
 
-      {/* ✅ Input box */}
+      {/* ✅ Input area */}
       <div className="input-area">
         <input
           type="text"
@@ -131,8 +132,9 @@ export default function Chat() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKey}
         />
+
         <button className="send-btn" onClick={sendMessage}>
-          <FiSend />
+          <SendHorizontal size={22} />
         </button>
       </div>
     </div>
