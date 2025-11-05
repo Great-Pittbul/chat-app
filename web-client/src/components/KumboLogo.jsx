@@ -1,34 +1,51 @@
-export default function KumboLogo({ size = 42 }) {
+import { motion } from "framer-motion";
+
+export default function KumboLogo({ size = 50 }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 300 300"
-      style={{
-        filter: "drop-shadow(0px 4px 12px rgba(0,0,0,0.25))",
-      }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="flex items-center gap-3"
     >
-      <defs>
-        <linearGradient id="luxBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#2563eb" />
-          <stop offset="100%" stopColor="#1d4ed8" />
-        </linearGradient>
+      <div
+        className="rounded-2xl p-3"
+        style={{
+          background: "linear-gradient(135deg, #1f1f1f, #3b3b3b)",
+          boxShadow:
+            "0 8px 25px rgba(0,0,0,0.35), 0 0 18px rgba(0, 150, 255, 0.35)",
+        }}
+      >
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="50" cy="50" r="48" fill="#0F62FE" />
+          <path
+            d="M30 55 L50 30 L70 55 L50 70 Z"
+            fill="white"
+            opacity="0.9"
+          />
+        </svg>
+      </div>
 
-        <linearGradient id="luxGold" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#facc15" />
-          <stop offset="100%" stopColor="#eab308" />
-        </linearGradient>
-      </defs>
-
-      <circle cx="150" cy="150" r="140" fill="url(#luxBlue)" />
-
-      <path
-        d="M150 60 L210 150 L150 240 L90 150 Z"
-        fill="url(#luxGold)"
-        stroke="white"
-        strokeWidth="8"
-        strokeLinejoin="round"
-      />
-    </svg>
+      <motion.span
+        initial={{ opacity: 0, x: -6 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="text-3xl font-semibold tracking-wide"
+        style={{
+          background: "linear-gradient(to right, #ffffff, #d7e9ff)",
+          WebkitBackgroundClip: "text",
+          color: "transparent",
+          textShadow: "0 3px 10px rgba(0,0,0,0.35)",
+        }}
+      >
+        KUMBO
+      </motion.span>
+    </motion.div>
   );
 }
