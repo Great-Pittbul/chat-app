@@ -1,47 +1,69 @@
-/* Global Base */
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
-  background: #f5f5f5;
+  font-family: "Segoe UI", sans-serif;
+  background: #0b0f18;
+  color: #fff;
 }
 
-[data-theme="dark"] {
-  background: #0b0f19;
-  color: white;
-}
-
-/* AUTH */
-.auth-bg {
+.auth-container {
   height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  background: radial-gradient(circle at top, #1f3f73, #0b132b);
+  justify-content: center;
 }
 
-.auth-card {
-  width: 350px;
-  padding: 40px;
-  border-radius: 25px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  color: white;
+.k-logo-wrapper {
   text-align: center;
-}
-
-.auth-title {
   margin-bottom: 20px;
 }
 
-.auth-input {
-  width: 100%;
-  padding: 12px;
+.k-logo {
+  width: 100px;
+  height: 100px;
+  background: #111827;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  font-weight: bold;
+  color: #4da6ff;
+  box-shadow: 0 10px 35px rgba(77, 166, 255, 0.55);
+  animation: fadeIn 1.2s ease;
+}
+
+.brand {
   margin-top: 10px;
+  letter-spacing: 4px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.auth-card {
+  background: #111827;
+  padding: 30px;
+  border-radius: 16px;
+  width: 330px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  animation: fadeIn 0.8s ease;
+}
+
+.auth-card input {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
   border-radius: 10px;
   border: none;
   outline: none;
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
+  background: #1f2937;
+  color: #fff;
 }
 
 .auth-btn {
@@ -49,122 +71,88 @@ body {
   width: 100%;
   padding: 12px;
   border: none;
-  background: #1d4ed8;
-  color: white;
   border-radius: 10px;
-  cursor: pointer;
-}
-
-.auth-switch {
-  margin-top: 15px;
-  cursor: pointer;
-  opacity: 0.7;
-}
-
-/* CHAT */
-.chat-bg {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(#090d14, #111827);
-}
-
-.chat-header {
-  padding: 18px;
-  display: flex;
-  justify-content: space-between;
+  background: #2563eb;
   color: white;
-  align-items: center;
-}
-
-.chat-title {
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 22px;
+  font-weight: bold;
   cursor: pointer;
+}
+
+.toggle {
+  margin-top: 12px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.8;
 }
 
 .chat-body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding: 15px;
+  background: #111827;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.head-icons svg {
+  font-size: 22px;
+  margin-left: 15px;
+  cursor: pointer;
+}
+
+.chat-messages {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
 }
 
-.chat-bubble {
-  max-width: 65%;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 14px;
-  backdrop-filter: blur(20px);
+.msg {
+  max-width: 80%;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  font-size: 15px;
 }
 
-.mine {
-  background: rgba(59, 130, 246, 0.25);
+.my-msg {
+  background: #3b82f6;
+  color: white;
   margin-left: auto;
 }
 
-.theirs {
-  background: rgba(255, 255, 255, 0.15);
+.their-msg {
+  background: #1f2937;
+  color: #e5e7eb;
   margin-right: auto;
 }
 
 .chat-input-area {
-  padding: 12px;
   display: flex;
-  gap: 10px;
+  padding: 15px;
+  background: #111827;
 }
 
-.chat-input {
+.chat-input-area input {
   flex: 1;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 10px;
   border: none;
-  outline: none;
+  background: #1f2937;
+  color: #fff;
 }
 
-.send-btn {
-  padding: 12px 18px;
-  border-radius: 12px;
+.chat-input-area button {
+  width: 60px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 10px;
   background: #2563eb;
   color: white;
-  border: none;
-  cursor: pointer;
-}
-
-/* SETTINGS */
-.settings-bg {
-  height: 100vh;
-  padding: 20px;
-  background: #0a0f18;
-  color: white;
-}
-
-.settings-card {
-  margin-top: 60px;
-  padding: 25px;
-  border-radius: 20px;
-  backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.setting-item {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.theme-toggle,
-.logout-btn {
-  margin-top: 20px;
-  padding: 12px;
-  width: 100%;
-  border: none;
-  border-radius: 12px;
+  font-size: 20px;
   cursor: pointer;
 }
