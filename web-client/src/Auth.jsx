@@ -1,126 +1,184 @@
 import React, { useState } from "react";
 
-const API_URL = "https://chat-app-y0st.onrender.com"; // ✅ Your live backend
+const API_URL = "https://chat-app-y0st.onrender.com";
 
 export default function Auth() {
   const [isSignup, setIsSignup] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const theme = localStorage.getItem("theme") || "light";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
-
-    const endpoint = isSignup ? "/signup" : "/login";
+    setError("");
 
     try {
+      const endpoint = isSignup ? "/signup" : "/login";
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(
+          isSignup ? { name, email, password } : { email, password }
+        ),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-      if (isSignup && data.success) {
-        alert("Signup successful! You can now log in.");
+      if (isSignup) {
+        alert("✅ Signup successful! Please log in.");
         setIsSignup(false);
-        setLoading(false);
-        return;
+      } else {
+        localStorage.setItem("user", JSON.stringify(data));
+        window.location.href = "/chat";
       }
-
-      localStorage.setItem("user", JSON.stringify(data));
-      window.location.href = "/chat";
     } catch (err) {
       setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
 
   return (
     <div
-      className="flex items-center justify-center h-screen transition-all duration-700"
       style={{
-        background: isSignup
-          ? "linear-gradient(135deg, #2563eb, #1e3a8a)"
-          : "linear-gradient(135deg, #111827, #1f2937)",
-        color: "white",
+        height: "100vh",
+        background:
+          theme === "dark"
+            ? "linear-gradient(135deg, #0f172a, #1e293b)"
+            : "linear-gradient(135deg, #e0f2fe, #f8fafc)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "0.4s ease",
       }}
     >
       <div
-        className="w-96 p-8 rounded-2xl shadow-2xl transition-all duration-500"
         style={{
-          backgroundColor: "rgba(17,24,39,0.9)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          width: "350px",
+          background:
+            theme === "dark"
+              ? "rgba(30, 41, 59, 0.9)"
+              : "rgba(255, 255, 255, 0.9)",
+          boxShadow:
+            theme === "dark"
+              ? "0 0 20px rgba(255,255,255,0.05)"
+              : "0 4px 20px rgba(0,0,0,0.1)",
+          padding: "2rem",
+          borderRadius: "16px",
+          backdropFilter: "blur(10px)",
+          textAlign: "center",
+          color: theme === "dark" ? "white" : "#1e293b",
+          transition: "0.3s ease",
         }}
       >
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isSignup ? "Create Account" : "Welcome Back"}
-        </h2>
+        <h1
+          style={{
+            fontSize: "1.8rem",
+            fontWeight: "bold",
+            marginBottom: "1rem",
+          }}
+        >
+          💬 Welcome to <span style={{ color: "#2563eb" }}>KUMBO</span>
+        </h1>
+        <p style={{ opacity: 0.8, marginBottom: "1.5rem" }}>
+          {isSignup ? "Create your account" : "Login to continue"}
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit}>
           {isSignup && (
             <input
               type="text"
-              name="name"
               placeholder="Full Name"
-              value={form.name}
-              onChange={handleChange}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              style={inputStyle(theme)}
             />
           )}
-
           <input
             type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            style={inputStyle(theme)}
           />
-
           <input
             type="password"
-            name="password"
             placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            style={inputStyle(theme)}
           />
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && (
+            <p style={{ color: "#ef4444", marginBottom: "1rem", fontSize: "0.9rem" }}>
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition-all duration-300 ${
-              isSignup
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "bg-green-600 hover:bg-green-700"
-            } ${loading && "opacity-70 cursor-not-allowed"}`}
+            style={{
+              width: "100%",
+              padding: "12px",
+              background: "#2563eb",
+              color: "white",
+              fontWeight: "bold",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "0.3s",
+            }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
           >
-            {loading ? "Please wait..." : isSignup ? "Sign Up" : "Login"}
+            {loading
+              ? "Please wait..."
+              : isSignup
+              ? "Sign Up"
+              : "Log In"}
           </button>
         </form>
 
-        <div className="text-center mt-6 text-sm">
-          {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
+        <p style={{ marginTop: "1.2rem" }}>
+          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
           <span
-            className="text-blue-400 hover:underline cursor-pointer transition-all"
             onClick={() => setIsSignup(!isSignup)}
+            style={{
+              color: "#2563eb",
+              cursor: "pointer",
+              fontWeight: "bold",
+              transition: "0.3s",
+            }}
+            onMouseEnter={(e) => (e.target.style.color = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.color = "#2563eb")}
           >
-            {isSignup ? "Login" : "Sign Up"}
+            {isSignup ? "Login" : "Sign up"}
           </span>
-        </div>
+        </p>
       </div>
     </div>
   );
 }
+
+const inputStyle = (theme) => ({
+  width: "100%",
+  padding: "12px",
+  marginBottom: "1rem",
+  borderRadius: "8px",
+  border: "1px solid #64748b",
+  background: theme === "dark" ? "#1e293b" : "#fff",
+  color: theme === "dark" ? "white" : "black",
+  outline: "none",
+  fontSize: "1rem",
+  transition: "0.3s",
+});
