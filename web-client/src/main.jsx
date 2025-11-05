@@ -3,11 +3,12 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./Auth";
 import Chat from "./Chat";
-import Settings from "./Settings"; // ✅ New Settings page
-import "./style.css"; // Global styles
+import Settings from "./Settings";
+import "./style.css";
 
 function App() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const rawUser = localStorage.getItem("user");
+  const user = rawUser ? JSON.parse(rawUser) : null;
 
   return (
     <Router>
