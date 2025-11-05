@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import KumboLogo from "./components/KumboLogo";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
 
@@ -10,9 +11,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const theme = localStorage.getItem("theme") || "dark";
-
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -30,32 +29,38 @@ export default function Auth() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
+      if (!res.ok) throw new Error(data.error || "Failed");
 
       if (isSignup) {
-        alert("Signup successful! Please log in.");
+        alert("Signup successful. Please log in.");
         setIsSignup(false);
       } else {
         localStorage.setItem("user", JSON.stringify(data));
         window.location.href = "/chat";
       }
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(err.message);
     }
+
     setLoading(false);
-  };
+  }
 
   return (
-    <div className={`auth-page ${theme}`}>
-      <div className="auth-box">
-        <h1>KUMBO</h1>
-        <p>{isSignup ? "Create an account" : "Login to continue"}</p>
+    <div className="auth-bg">
+      <div className="auth-box glass">
+        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+          <KumboLogo size={70} />
+        </div>
+
+        <h1 className="auth-title">Welcome to KUMBO</h1>
+
+        <p className="auth-sub">{isSignup ? "Create Account" : "Sign In"}</p>
 
         <form onSubmit={handleSubmit}>
           {isSignup && (
             <input
-              type="text"
-              placeholder="Full name"
+              className="input"
+              placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -63,36 +68,34 @@ export default function Auth() {
           )}
 
           <input
+            className="input"
+            placeholder="Email Address"
             type="email"
-            placeholder="Email address"
             value={email}
-            required
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
 
           <input
-            type="password"
+            className="input"
             placeholder="Password"
+            type="password"
             value={password}
-            required
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
 
           {error && <p className="error">{error}</p>}
 
-          <button type="submit" disabled={loading}>
-            {loading
-              ? "Please wait..."
-              : isSignup
-              ? "Sign Up"
-              : "Login"}
+          <button className="btn-primary" disabled={loading}>
+            {loading ? "Please wait..." : isSignup ? "Sign Up" : "Log In"}
           </button>
         </form>
 
-        <p>
-          {isSignup ? "Already have an account?" : "No account?"}{" "}
+        <p className="switch-auth">
+          {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
           <span onClick={() => setIsSignup(!isSignup)}>
-            {isSignup ? "Login" : "Sign up"}
+            {isSignup ? "Login" : "Register"}
           </span>
         </p>
       </div>
