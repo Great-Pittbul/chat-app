@@ -1,244 +1,137 @@
-/* ============================
-   KUMBO — LUXURY SOCIAL THEME
-   Noir Glass (Dark First) + Soft Gold
-   Soft Gold: #cfa55b
-   ============================ */
+/* ====================================
+   🔵 DARK NAVY THEME EXTENSION
+   ==================================== */
+[data-theme="dark-navy"] {
+  --dark-bg: #0b1020;
+  --dark-card: rgba(18, 24, 45, 0.55);
+  --dark-border: rgba(255, 255, 255, 0.06);
 
-/* ---------- Root Colors ---------- */
-:root {
+  --text-primary: #ffffff;
+  --text-secondary: #b7bed0;
+
+  --glass-bg: rgba(12, 17, 32, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.07);
+
+  --gradient-1: linear-gradient(145deg, #0a0f1d, #101a30, #0d1426);
+
   --soft-gold: #cfa55b;
   --soft-gold-light: #e3c892;
 
-  --dark-bg: #0f0f0f;
-  --dark-card: rgba(25, 25, 25, 0.6);
-  --dark-border: rgba(255, 255, 255, 0.08);
-
-  --text-primary: #ffffff;
-  --text-secondary: #bdbdbd;
-
-  --glass-bg: rgba(20, 20, 20, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.08);
-
-  --gradient-1: linear-gradient(135deg, #0f0f0f, #1b1b1b, #111);
-  --gradient-gold: linear-gradient(135deg, #cfa55b, #e3c892);
+  --gold-shadow: rgba(207, 165, 91, 0.35);
 }
 
-/* Light mode */
-[data-theme="light"] {
-  --dark-bg: #f7f7f7;
-  --dark-card: rgba(255, 255, 255, 0.65);
-  --dark-border: rgba(0, 0, 0, 0.1);
-
-  --text-primary: #1a1a1a;
-  --text-secondary: #545454;
-
-  --glass-bg: rgba(255, 255, 255, 0.55);
-  --glass-border: rgba(0, 0, 0, 0.1);
-
-  --gradient-1: linear-gradient(135deg, #ffffff, #f0f0f0);
+/* ====================================
+   GOLD MOTION SHADOW (used in avatar,
+   icons, buttons, etc.)
+   ==================================== */
+:root {
+  --gold-shadow: rgba(207, 165, 91, 0.35);
 }
 
-/* ---------- Global Reset ---------- */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Inter", sans-serif;
+/* Avatar Enhancements */
+.settings-avatar {
+  width: 105px;
+  height: 105px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--soft-gold);
+  box-shadow: 0 0 14px var(--gold-shadow);
 }
 
-body {
-  background: var(--gradient-1);
-  color: var(--text-primary);
-  transition: background 0.4s ease, color 0.4s ease;
-}
-
-/* ---------- Glass Panels ---------- */
-.glass-panel {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 25px;
-  border-radius: 18px;
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
-  animation: fadeUp 0.5s ease forwards;
-}
-
-/* ---------- Fade + Slide Animation ---------- */
-@keyframes fadeUp {
-  0% { opacity: 0; transform: translateY(16px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-/* ---------- Auth Page ---------- */
-.auth-container {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.auth-box {
-  width: 100%;
-  max-width: 420px;
-}
-
-.auth-title {
-  font-size: 28px;
-  text-align: center;
+/* ====================================
+   SETTINGS PAGE EXTENSIONS
+   ==================================== */
+.settings-section-title {
   font-weight: 700;
+  margin-bottom: 10px;
   color: var(--soft-gold);
-  margin-bottom: 20px;
-}
-
-/* ---------- Inputs ---------- */
-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid var(--dark-border);
-  background: var(--dark-card);
-  color: var(--text-primary);
-  margin-bottom: 12px;
-  transition: border 0.3s ease, box-shadow 0.3s ease;
-}
-
-input:focus {
-  border-color: var(--soft-gold);
-  box-shadow: 0 0 8px rgba(207, 165, 91, 0.4);
-}
-
-/* ---------- Buttons ---------- */
-button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--soft-gold);
-  color: #000;
-  border: none;
   font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(207, 165, 91, 0.45);
-}
-
-/* Secondary button */
-.btn-alt {
-  background: transparent;
-  color: var(--soft-gold);
-  border: 1px solid var(--soft-gold);
-}
-
-.btn-alt:hover {
-  background: var(--soft-gold-light);
-  color: #000;
-}
-
-/* ---------- Chat Page ---------- */
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 15px;
-  gap: 15px;
-}
-
-.chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 18px;
-  border-radius: 14px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-}
-
-.chat-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--soft-gold);
-}
-
-.logout-btn {
-  width: auto;
-  padding: 8px 14px;
-  font-size: 14px;
-}
-
-/* Chat messages list */
-.chat-box {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-/* User message */
-.message {
-  background: var(--dark-card);
-  margin-bottom: 12px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  font-size: 15px;
-  border-left: 3px solid var(--soft-gold);
-}
-
-/* Message input */
-.send-container {
-  display: flex;
-  gap: 10px;
-}
-
-.send-container input {
-  flex: 1;
-}
-
-.send-btn {
-  width: auto;
-  padding: 12px 22px;
-}
-
-/* ---------- Settings Page ---------- */
-.settings-container {
-  max-width: 520px;
-  margin: 40px auto;
 }
 
 .settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  padding: 18px;
+  padding: 16px;
   border-radius: 14px;
-  margin-bottom: 16px;
+  color: var(--text-primary);
+  transition: 0.25s ease;
 }
 
-/* ---------- Scrollbar ---------- */
-::-webkit-scrollbar {
-  width: 7px;
+.settings-item:hover {
+  background: rgba(207, 165, 91, 0.08);
+  transform: translateY(-2px);
+  border-color: var(--soft-gold);
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(207, 165, 91, 0.4);
+/* For icons inside settings */
+.settings-item svg {
+  color: var(--soft-gold);
+}
+
+/* ====================================
+   MESSAGE INPUT — WhatsApp Style
+   ==================================== */
+.send-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+}
+
+.send-container input {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 14px;
   border-radius: 20px;
 }
 
-/* ---------- Theme Toggle ---------- */
-.theme-toggle {
-  position: fixed;
-  top: 18px;
-  right: 18px;
-  z-index: 50;
+.media-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.25s ease;
 }
 
-.theme-toggle button {
-  width: auto;
-  padding: 10px 14px;
+.media-button:hover {
+  border-color: var(--soft-gold);
+  box-shadow: 0 0 10px var(--gold-shadow);
+}
+
+/* SEND BUTTON */
+.send-btn {
+  width: 54px !important;
+  height: 44px;
+  border-radius: 14px;
   background: var(--soft-gold);
   color: #000;
-  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(207, 165, 91, 0.3);
+}
+
+/* ====================================
+   CHAT ATTACHMENT PREVIEW (image/doc)
+   ==================================== */
+.attachment-preview {
+  max-width: 180px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  border: 2px solid var(--soft-gold);
+  box-shadow: 0 0 12px var(--gold-shadow);
+}
+
+/* ====================================
+   SCROLL SMOOTH
+   ==================================== */
+html {
+  scroll-behavior: smooth;
 }
