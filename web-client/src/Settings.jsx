@@ -1,71 +1,63 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, LogOut, Sun, Moon, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import KumboLogo from "./components/KumboLogo";
 
 export default function Settings() {
-  const navigate = useNavigate();
-
-  const storedUser = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("user")) || null;
-    } catch {
-      return null;
-    }
-  })();
-
-  const [name, setName] = useState(storedUser?.name || "");
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const nav = useNavigate();
+  const stored = JSON.parse(localStorage.getItem("user"));
+  const [name, setName] = useState(stored?.name || "");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
   useEffect(() => {
     document.body.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const saveName = () => {
-    const updated = { ...storedUser, name };
+  function save() {
+    const updated = { ...stored, name };
     localStorage.setItem("user", JSON.stringify(updated));
-    alert("Name updated!");
-  };
+    alert("Updated!");
+  }
 
   return (
-    <div className="settings-page">
+    <div className="settings-bg">
+      <div className="settings-box glass">
+        <KumboLogo size={60} />
 
-      <button className="back-btn" onClick={() => navigate("/chat")}>
-        <ArrowLeft />
-      </button>
+        <h1 className="settings-title">Settings</h1>
 
-      <h1>Settings</h1>
-      <p>Manage preferences</p>
+        <div className="form-row">
+          <label>Name</label>
+          <input
+            className="input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
 
-      <div className="settings-item">
-        <User />
-        <input
-          type="text"
-          value={name}
-          placeholder="Enter new display name"
-          onChange={(e) => setName(e.target.value)}
-        />
-        <button onClick={saveName}>Save</button>
+        <button className="btn-primary" onClick={save}>Save</button>
+
+        <button
+          className="btn-secondary"
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+        >
+          Toggle Theme
+        </button>
+
+        <button
+          className="btn-danger"
+          onClick={() => {
+            localStorage.removeItem("user");
+            nav("/");
+          }}
+        >
+          Logout
+        </button>
+
+        <button className="back-btn" onClick={() => nav("/chat")}>
+          ← Back
+        </button>
       </div>
-
-      <button
-        className="settings-btn"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      >
-        {theme === "dark" ? <Sun /> : <Moon />}
-        Toggle {theme === "dark" ? "Light" : "Dark"} Mode
-      </button>
-
-      <button
-        className="logout-btn-red"
-        onClick={() => {
-          localStorage.removeItem("user");
-          navigate("/");
-        }}
-      >
-        <LogOut /> Logout
-      </button>
-
     </div>
   );
 }
