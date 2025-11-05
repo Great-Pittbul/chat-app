@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
 
@@ -8,134 +7,178 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [playIntro, setPlayIntro] = useState(false);
 
-  useEffect(() => {
-    // play logo intro once per session
-    const seen = sessionStorage.getItem("kumbo_logo_seen");
-    if (!seen) {
-      setPlayIntro(true);
-      sessionStorage.setItem("kumbo_logo_seen", "1");
-    }
-  }, []);
+  const theme = localStorage.getItem("theme") || "light";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setBusy(true);
+    setLoading(true);
     setError("");
 
     try {
       const endpoint = isSignup ? "/signup" : "/login";
-      const body = isSignup ? { name, email, password } : { email, password };
-
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(
+          isSignup ? { name, email, password } : { email, password }
+        ),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Request failed");
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-      if (isSignup && data.success) {
-        // tell user and switch to login
-        alert("Signup successful. Please log in.");
+      if (isSignup) {
+        alert("✅ Signup successful! Please log in.");
         setIsSignup(false);
-        setBusy(false);
-        return;
+      } else {
+        localStorage.setItem("user", JSON.stringify(data));
+        window.location.href = "/chat";
       }
-
-      // login successful -> store user object (backend returns { token, name })
-      localStorage.setItem("user", JSON.stringify(data));
-      window.location.href = "/chat";
     } catch (err) {
       setError(err.message);
-      setBusy(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="app-centered" style={{ background: "linear-gradient(180deg,#eef7ff,#f5f8ff)" }}>
-      <motion.div
-        initial={{ opacity: 0, y: -18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        style={{ textAlign: "center", marginBottom: 12 }}
+    <div
+      style={{
+        height: "100vh",
+        background:
+          theme === "dark"
+            ? "linear-gradient(135deg, #0f172a, #1e293b)"
+            : "linear-gradient(135deg, #e0f2fe, #f8fafc)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "0.4s ease",
+      }}
+    >
+      <div
+        style={{
+          width: "350px",
+          background:
+            theme === "dark"
+              ? "rgba(30, 41, 59, 0.9)"
+              : "rgba(255, 255, 255, 0.9)",
+          boxShadow:
+            theme === "dark"
+              ? "0 0 20px rgba(255,255,255,0.05)"
+              : "0 4px 20px rgba(0,0,0,0.1)",
+          padding: "2rem",
+          borderRadius: "16px",
+          backdropFilter: "blur(10px)",
+          textAlign: "center",
+          color: theme === "dark" ? "white" : "#1e293b",
+          transition: "0.3s ease",
+        }}
       >
-        {/* Animated Logo reveal (plays once) */}
-        <motion.div
-          initial={playIntro ? { opacity: 0, y: -20, scale: 0.98 } : false}
-          animate={playIntro ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1 }}
-          transition={{ duration: 0.8, ease: "circOut" }}
+        <h1
+          style={{
+            fontSize: "1.8rem",
+            fontWeight: "bold",
+            marginBottom: "1rem",
+          }}
         >
-          <div style={{ display: "inline-block", textAlign: "center" }}>
-            <div className="kumbo-logo" style={{ fontSize: 30 }}>KUMBO</div>
-            <div className="kumbo-tagline">Connect. Evolve. Belong.</div>
-          </div>
-        </motion.div>
-      </motion.div>
+          💬 Welcome to <span style={{ color: "#2563eb" }}>KUMBO</span>
+        </h1>
+        <p style={{ opacity: 0.8, marginBottom: "1.5rem" }}>
+          {isSignup ? "Create your account" : "Login to continue"}
+        </p>
 
-      <motion.div
-        className="auth-card"
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-      >
-        <h3 style={{ margin: 0, marginBottom: 10, textAlign: "center", fontSize: 18, fontWeight: 700 }}>
-          {isSignup ? "Create your KUMBO account" : "Welcome back"}
-        </h3>
-
-        <form onSubmit={handleSubmit} style={{ marginTop: 8 }}>
+        <form onSubmit={handleSubmit}>
           {isSignup && (
             <input
-              className="input"
-              placeholder="Full name"
+              type="text"
+              placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              style={inputStyle(theme)}
             />
           )}
-
           <input
-            className="input"
-            placeholder="Email address"
             type="email"
+            placeholder="Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            style={inputStyle(theme)}
           />
-
           <input
-            className="input"
-            placeholder="Password"
             type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            minLength={6}
             required
+            style={inputStyle(theme)}
           />
 
-          {error && <div style={{ color: "#ef4444", marginBottom: 8 }}>{error}</div>}
+          {error && (
+            <p style={{ color: "#ef4444", marginBottom: "1rem", fontSize: "0.9rem" }}>
+              {error}
+            </p>
+          )}
 
-          <button className="btn" type="submit" disabled={busy}>
-            {busy ? "Please wait..." : isSignup ? "Create account" : "Log in"}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "12px",
+              background: "#2563eb",
+              color: "white",
+              fontWeight: "bold",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "0.3s",
+            }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563eb")}
+          >
+            {loading
+              ? "Please wait..."
+              : isSignup
+              ? "Sign Up"
+              : "Log In"}
           </button>
         </form>
 
-        <div style={{ marginTop: 12, textAlign: "center" }}>
-          <button
-            className="btn-ghost"
-            onClick={() => {
-              setIsSignup(!isSignup);
-              setError("");
+        <p style={{ marginTop: "1.2rem" }}>
+          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
+          <span
+            onClick={() => setIsSignup(!isSignup)}
+            style={{
+              color: "#2563eb",
+              cursor: "pointer",
+              fontWeight: "bold",
+              transition: "0.3s",
             }}
+            onMouseEnter={(e) => (e.target.style.color = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.color = "#2563eb")}
           >
-            {isSignup ? "Have an account? Log in" : "New here? Create account"}
-          </button>
-        </div>
-      </motion.div>
+            {isSignup ? "Login" : "Sign up"}
+          </span>
+        </p>
+      </div>
     </div>
   );
 }
+
+const inputStyle = (theme) => ({
+  width: "100%",
+  padding: "12px",
+  marginBottom: "1rem",
+  borderRadius: "8px",
+  border: "1px solid #64748b",
+  background: theme === "dark" ? "#1e293b" : "#fff",
+  color: theme === "dark" ? "white" : "black",
+  outline: "none",
+  fontSize: "1rem",
+  transition: "0.3s",
+});
