@@ -3,27 +3,16 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./Auth";
 import Chat from "./Chat";
-import Settings from "./Settings";
-import "./style.css";
+import Settings from "./Settings"; // ✅ add this line
 
 function App() {
-  const rawUser = localStorage.getItem("user");
-  const user = rawUser ? JSON.parse(rawUser) : null;
-
+  const user = JSON.parse(localStorage.getItem("user"));
   return (
     <Router>
       <Routes>
-        {/* Auth route */}
         <Route path="/" element={user ? <Navigate to="/chat" /> : <Auth />} />
-
-        {/* Chat route */}
         <Route path="/chat" element={user ? <Chat /> : <Navigate to="/" />} />
-
-        {/* Settings route */}
-        <Route path="/settings" element={user ? <Settings /> : <Navigate to="/" />} />
-
-        {/* Catch-all redirect */}
-        <Route path="*" element={<Navigate to={user ? "/chat" : "/"} />} />
+        <Route path="/settings" element={user ? <Settings /> : <Navigate to="/" />} /> {/* ✅ new route */}
       </Routes>
     </Router>
   );
