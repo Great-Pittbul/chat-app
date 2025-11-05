@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Kumbologo from "./components/KumboLogo.jsx";
 
-const API_URL = "https://chat-backend-kumbo.onrender.com";
+const API_URL = "https://chat-app-y0st.onrender.com";
 
 export default function Auth() {
   const nav = useNavigate();
