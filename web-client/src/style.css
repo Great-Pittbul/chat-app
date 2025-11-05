@@ -1,180 +1,189 @@
-/* ===============================
-   KUMBO — Global Luxury Theme
-   Dark-first + Soft Gold Palette
-=================================*/
-
-/* ---------- Font ----------- */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-
-:root {
-  --gold: #d4af37;
-  --gold-soft: rgba(212, 175, 55, 0.45);
-  --gold-light: rgba(212, 175, 55, 0.25);
-
-  --dark-bg: #0e0e0e;
-  --dark-card: #181818;
-  --dark-soft: #222;
-
-  --light-bg: #fafafa;
-  --light-card: #ffffff;
-
-  --radius: 16px;
-  --speed: 0.35s;
+/* ===== BASE STYLES ===== */
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.4s, color 0.4s;
 }
 
-/* ---------- DEFAULT FALLBACK (IMPORTANT FIX) ---------- */
-body:not([data-theme]) {
-  background: var(--dark-bg);
-  color: white;
-}
-
-/* ---------- THEME HANDLER ---------- */
-body[data-theme="dark"] {
-  background: var(--dark-bg);
-  color: white;
-}
-
+/* ===== THEME VARIABLES ===== */
 body[data-theme="light"] {
-  background: var(--light-bg);
-  color: black;
+  --bg: #f9fafb;
+  --text: #111827;
+  --card-bg: #ffffff;
+  --button-bg: #3b82f6;
+  --button-hover: #2563eb;
 }
 
-/* Smooth transitions everywhere */
-* {
-  transition: background var(--speed), color var(--speed), border var(--speed);
-  font-family: "Inter", sans-serif;
+body[data-theme="dark"] {
+  --bg: #111827;
+  --text: #e5e7eb;
+  --card-bg: #1f2937;
+  --button-bg: #06b6d4;
+  --button-hover: #0891b2;
 }
 
-/* ---------- CENTERED LAYOUTS ---------- */
-.lux-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+/* ===== THEME TOGGLE ===== */
+.theme-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
 }
-
-/* ---------- LUXURY CARD ---------- */
-.lux-card {
-  background: var(--dark-card);
-  border-radius: var(--radius);
-  padding: 32px;
-  width: 92%;
-  max-width: 420px;
-  box-shadow: 0 0 22px rgba(0, 0, 0, 0.55);
-  border: 1px solid var(--gold-light);
-}
-
-body[data-theme="light"] .lux-card {
-  background: var(--light-card);
-  border: 1px solid var(--gold-light);
-}
-
-/* ---------- BUTTON ---------- */
-.lux-btn {
-  background: var(--gold);
-  color: black;
-  padding: 14px 22px;
-  border: none;
-  border-radius: var(--radius);
-  font-weight: 600;
+.theme-toggle button {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   cursor: pointer;
+  transition: 0.3s;
+}
+.theme-toggle button:hover {
+  transform: scale(1.05);
+}
+
+/* ===== AUTH FORM ===== */
+.auth-container {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+}
+
+.auth-card {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  width: 350px;
+  text-align: center;
+}
+
+.auth-card h2 {
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.auth-input {
   width: 100%;
-  margin-top: 18px;
-  transition: transform var(--speed), box-shadow var(--speed);
+  padding: 0.8rem;
+  margin: 0.6rem 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  outline: none;
+  background: var(--bg);
+  color: var(--text);
 }
 
-.lux-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
-}
-
-/* ---------- INPUT ---------- */
-.lux-input {
+.auth-button {
   width: 100%;
-  padding: 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--gold-light);
-  background: transparent;
-  margin-bottom: 16px;
+  background: var(--button-bg);
+  color: white;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 8px;
+  margin-top: 0.8rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.auth-button:hover {
+  background: var(--button-hover);
+  transform: translateY(-2px);
 }
 
-body[data-theme="light"] .lux-input {
-  background: #f2f2f2;
+.auth-toggle {
+  margin-top: 1rem;
+  color: var(--button-bg);
+  cursor: pointer;
+  font-weight: 500;
+}
+.auth-toggle:hover {
+  text-decoration: underline;
 }
 
-/* ---------- GOLD TEXT ---------- */
-.gold {
-  color: var(--gold);
-}
-
-/* ---------- CHAT PAGE BASE ---------- */
-
+/* ===== CHAT ===== */
 .chat-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  background: var(--bg);
 }
 
 .chat-header {
-  padding: 18px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: 600;
-  border-bottom: 1px solid var(--gold-light);
-}
-
-.chat-area {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.message {
-  max-width: 72%;
-  padding: 12px 18px;
-  margin-bottom: 14px;
-  border-radius: var(--radius);
-}
-
-.message.user {
-  background: var(--gold);
-  color: black;
-  margin-left: auto;
-}
-
-.message.bot {
-  background: var(--dark-card);
-  border: 1px solid var(--gold-light);
-}
-
-body[data-theme="light"] .message.bot {
-  background: #fff;
-}
-
-/* ---------- INPUT AREA ---------- */
-.chat-input-area {
+  background: var(--button-bg);
+  color: white;
+  padding: 1rem 1.5rem;
   display: flex;
-  padding: 14px;
-  border-top: 1px solid var(--gold-light);
-  background: var(--dark-bg);
+  justify-content: space-between;
+  align-items: center;
 }
 
-body[data-theme="light"] .chat-input-area {
-  background: var(--light-card);
-}
-
-.chat-input-area input {
+.chat-messages {
   flex: 1;
-  padding: 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--gold-light);
-  margin-right: 10px;
+  overflow-y: auto;
+  padding: 1rem;
 }
 
-.chat-input-area button {
-  background: var(--gold);
+.chat-message {
+  background: var(--card-bg);
+  margin-bottom: 0.8rem;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.chat-message strong {
+  color: var(--button-bg);
+}
+
+.chat-input-container {
+  display: flex;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-top: 1px solid #eee;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.chat-send {
+  background: var(--button-bg);
+  color: white;
   border: none;
-  padding: 0 22px;
-  border-radius: var(--radius);
-  font-weight: 600;
+  padding: 0.9rem 1.5rem;
+  border-radius: 8px;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+.chat-send:hover {
+  background: var(--button-hover);
+  transform: translateY(-2px);
+}
+
+.logout-button {
+  background: white;
+  color: var(--button-bg);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.3s;
+}
+.logout-button:hover {
+  background: #f3f4f6;
 }
