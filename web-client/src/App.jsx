@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./Auth";
 import Chat from "./Chat";
@@ -21,10 +20,10 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={!user ? <Auth /> : <Navigate to="/chat" />} />
+        <Route path="/" element={user ? <Navigate to="/chat" /> : <Auth />} />
         <Route path="/chat" element={user ? <Chat /> : <Navigate to="/" />} />
         <Route path="/settings" element={user ? <Settings /> : <Navigate to="/" />} />
-        <Route path="*" element={<Navigate to={user ? "/chat" : "/"} />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
