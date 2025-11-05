@@ -1,0 +1,121 @@
+body[data-theme="dark"] {
+  background: #0f172a;
+  color: white;
+}
+
+body[data-theme="light"] {
+  background: #f1f5f9;
+  color: #111;
+}
+
+/* AUTH */
+.auth-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-box {
+  width: 350px;
+  padding: 30px;
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  text-align: center;
+}
+
+.auth-box.dark {
+  background: rgba(30,41,59,0.8);
+}
+
+/* CHAT */
+.chat-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.3rem;
+}
+
+.messages-box {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.msg {
+  max-width: 70%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+
+.my {
+  margin-left: auto;
+  background: #2563eb;
+  color: white;
+}
+
+.other {
+  background: #1e293b;
+  color: white;
+}
+
+.input-bar {
+  display: flex;
+  padding: 15px;
+  gap: 10px;
+}
+
+.input-bar input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+}
+
+.input-bar button {
+  padding: 0 20px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+/* SETTINGS */
+.settings-page {
+  height: 100vh;
+  padding: 30px;
+  text-align: center;
+}
+
+.settings-item {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px auto;
+}
+
+.logout-btn-red {
+  padding: 12px;
+  background: #ef4444;
+  color: white;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+}
