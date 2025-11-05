@@ -2,9 +2,27 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, LogOut, User, Sun, Moon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+// ✅ Safe JSON parser
+function safeParseUser() {
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed;
+  } catch (e) {
+    console.warn("Invalid user JSON — resetting.", e);
+    localStorage.removeItem("user");
+    return null;
+  }
+}
+
 export default function Settings() {
   const navigate = useNavigate();
-  const storedUser = JSON.parse(localStorage.getItem("user"));
+
+  // ✅ SAFELY load user so the app never crashes
+  const storedUser = safeParseUser();
+
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [name, setName] = useState(storedUser?.name || "");
 
@@ -39,7 +57,7 @@ export default function Settings() {
         position: "relative",
       }}
     >
-      {/* Back to Chat */}
+      {/* Back Button */}
       <button
         onClick={() => navigate("/chat")}
         style={{
@@ -55,7 +73,6 @@ export default function Settings() {
         <ArrowLeft size={24} />
       </button>
 
-      {/* Brand */}
       <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>⚙️ KUMBO Settings</h1>
       <p style={{ opacity: 0.7, marginBottom: "2rem" }}>Manage your preferences</p>
 
@@ -121,7 +138,10 @@ export default function Settings() {
           gap: "0.5rem",
         }}
         onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
-        onMouseLeave={(e) => (e.target.style.backgroundColor = theme === "dark" ? "#2563eb" : "#3b82f6")}
+        onMouseLeave={(e) =>
+          (e.target.style.backgroundColor =
+            theme === "dark" ? "#2563eb" : "#3b82f6")
+        }
       >
         {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         Toggle {theme === "dark" ? "Light" : "Dark"} Mode
