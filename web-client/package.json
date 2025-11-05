@@ -13,7 +13,8 @@
     "socket.io-client": "^4.7.5",
     "lucide-react": "^0.473.0",
     "framer-motion": "^11.0.0",
-    "clsx": "^2.1.0"
+    "clsx": "^2.1.0",
+    "react-icons": "^5.0.1"
   },
   "devDependencies": {
     "vite": "^5.3.1",
