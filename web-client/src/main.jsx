@@ -1,43 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-
-import Auth from "./Auth";
-import Chat from "./Chat";
-import Settings from "./Settings";
-
+import App from "./App";
 import "./style.css";
-
-function App() {
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
-
-  const user = (() => {
-    try {
-      const raw = localStorage.getItem("user");
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch {
-      localStorage.removeItem("user");
-      return null;
-    }
-  })();
-
-  useEffect(() => {
-    document.body.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={user ? <Navigate to="/chat" /> : <Auth />} />
-        <Route path="/chat" element={user ? <Chat /> : <Navigate to="/" />} />
-        <Route path="/settings" element={user ? <Settings /> : <Navigate to="/" />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
-  );
-}
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
