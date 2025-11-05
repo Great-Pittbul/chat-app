@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FiSettings, FiLogOut, FiSend } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import KumboLogo from "./components/KumboLogo";
 
 const API_URL = "https://chat-app-y0st.onrender.com";
 
-function safeParseUser() {
+function safeUser() {
   try {
-    const raw = localStorage.getItem("user");
-    return raw ? JSON.parse(raw) : null;
+    return JSON.parse(localStorage.getItem("user"));
   } catch {
     localStorage.removeItem("user");
     return null;
@@ -15,21 +14,15 @@ function safeParseUser() {
 }
 
 export default function Chat() {
-  const user = safeParseUser();
-
-  const [messages, setMessages] = useState([]);
+  const user = safeUser();
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`${API_URL}/messages`);
-        const data = await res.json();
-        setMessages(data);
-      } catch {}
-    }
-    load();
+    fetch(`${API_URL}/messages`)
+      .then((r) => r.json())
+      .then((d) => setMessages(d));
   }, []);
 
   useEffect(() => {
@@ -39,62 +32,62 @@ export default function Chat() {
   async function sendMessage() {
     if (!input.trim()) return;
 
-    const newMsg = {
+    const msg = {
       text: input,
-      sender: user?.name || "User",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      sender: user?.name,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     };
 
-    setMessages((prev) => [...prev, newMsg]);
+    setMessages((m) => [...m, msg]);
     setInput("");
 
-    try {
-      await fetch(`${API_URL}/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newMsg),
-      });
-    } catch {}
+    await fetch(`${API_URL}/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(msg)
+    });
   }
 
   return (
-    <div className="chat-page">
+    <div className="chat-bg">
+      <header className="chat-header glass">
+        <KumboLogo size={40} />
+        <h2 className="chat-title">KUMBO CHAT</h2>
 
-      <header className="chat-header">
-        <h2>KUMBO</h2>
-        <div className="header-controls">
-          <Link to="/settings" className="icon-btn"><FiSettings /></Link>
+        <div className="chat-actions">
+          <Link to="/settings" className="icon-btn">⚙️</Link>
           <button className="icon-btn" onClick={() => {
             localStorage.removeItem("user");
             window.location.href = "/";
-          }}>
-            <FiLogOut />
-          </button>
+          }}>⏻</button>
         </div>
       </header>
 
-      <div className="messages-box">
+      <div className="messages-area">
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`msg ${msg.sender === user?.name ? "my" : "other"}`}
+            className={
+              msg.sender === user?.name ? "msg msg-me" : "msg msg-other"
+            }
           >
-            <p>{msg.text}</p>
-            <span>{msg.time}</span>
+            <p className="msg-text">{msg.text}</p>
+            <span className="msg-time">{msg.time}</span>
           </div>
         ))}
         <div ref={bottomRef} />
       </div>
 
-      <div className="input-bar">
+      <div className="input-area glass">
         <input
-          type="text"
+          className="chat-input"
           placeholder="Type message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button onClick={sendMessage}><FiSend /></button>
+
+        <button className="send-btn" onClick={sendMessage}>➤</button>
       </div>
     </div>
   );
