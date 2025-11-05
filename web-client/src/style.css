@@ -1,181 +1,149 @@
-
-/* ===============================
-   KUMBO — Global Luxury Theme
-   Dark-first + Soft Gold Palette
-=================================*/
-
-/* ---------- Font ----------- */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-
-:root {
-  --gold: #d4af37;
-  --gold-soft: rgba(212, 175, 55, 0.45);
-  --gold-light: rgba(212, 175, 55, 0.25);
-
-  --dark-bg: #0e0e0e;
-  --dark-card: #181818;
-  --dark-soft: #222;
-
-  --light-bg: #fafafa;
-  --light-card: #ffffff;
-
-  --radius: 16px;
-  --speed: 0.35s;
+/* Global & Theme variables (light-first) */
+:root{
+  --bg-light: linear-gradient(180deg,#eef8ff,#f8fbff);
+  --bg-dark: linear-gradient(180deg,#071326,#091923);
+  --card-bg-light: rgba(255,255,255,0.9);
+  --card-bg-dark: rgba(4,12,20,0.7);
+  --primary-gradient: linear-gradient(90deg,#06b6d4,#8b5cf6); /* turquoise -> violet */
+  --accent-gold: linear-gradient(90deg,#ffd166,#ffb86b);
+  --glass-border: rgba(255,255,255,0.6);
+  --muted: #64748b;
+  --radius-lg: 14px;
+  font-synthesis: none;
 }
 
-/* ---------- DEFAULT FALLBACK (IMPORTANT FIX) ---------- */
-body:not([data-theme]) {
-  background: var(--dark-bg);
-  color: white;
+/* Basic body */
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-light);
+  color: #0b1220;
+  transition: background 300ms ease, color 300ms ease;
 }
 
-/* ---------- THEME HANDLER ---------- */
-body[data-theme="dark"] {
-  background: var(--dark-bg);
-  color: white;
+/* when dark mode manually set via JS add data-theme="dark" to body */
+body[data-theme="dark"]{
+  background: var(--bg-dark);
+  color: #dff7f4;
 }
 
-body[data-theme="light"] {
-  background: var(--light-bg);
-  color: black;
-}
-
-/* Smooth transitions everywhere */
-* {
-  transition: background var(--speed), color var(--speed), border var(--speed);
-  font-family: "Inter", sans-serif;
-}
-
-/* ---------- CENTERED LAYOUTS ---------- */
-.lux-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* centered app container helper */
+.app-centered {
   min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
-/* ---------- LUXURY CARD ---------- */
-.lux-card {
-  background: var(--dark-card);
-  border-radius: var(--radius);
-  padding: 32px;
-  width: 92%;
-  max-width: 420px;
-  box-shadow: 0 0 22px rgba(0, 0, 0, 0.55);
-  border: 1px solid var(--gold-light);
+/* KUMBO logo text (gradient + glow) */
+.kumbo-logo {
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  font-size: 28px;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  text-shadow: 0 10px 30px rgba(139,92,246,0.06);
+}
+.kumbo-tagline {
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(11,18,32,0.65);
+}
+body[data-theme="dark"] .kumbo-tagline {
+  color: rgba(220,246,240,0.6);
 }
 
-body[data-theme="light"] .lux-card {
-  background: var(--light-card);
-  border: 1px solid var(--gold-light);
+/* Auth card */
+.auth-card {
+  width: 380px;
+  max-width: 92vw;
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-sizing: border-box;
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--card-bg-light);
+  box-shadow: 0 10px 40px rgba(11,18,32,0.06);
+  transition: background 240ms ease, border 240ms ease;
+}
+body[data-theme="dark"] .auth-card {
+  background: var(--card-bg-dark);
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 12px 48px rgba(3,10,18,0.6);
 }
 
-/* ---------- BUTTON ---------- */
-.lux-btn {
-  background: var(--gold);
-  color: black;
-  padding: 14px 22px;
+/* inputs */
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid rgba(6,10,15,0.06);
+  background: rgba(255,255,255,0.85);
+  outline: none;
+  font-size: 14px;
+  color: inherit;
+  transition: box-shadow .18s ease, transform .12s ease, border-color .12s ease;
+}
+body[data-theme="dark"] .input {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.input:focus {
+  box-shadow: 0 8px 30px rgba(6,182,212,0.08);
+  transform: translateY(-1px);
+  border-color: rgba(6,182,212,0.6);
+}
+
+/* primary button */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  width: 100%;
+  border-radius: 12px;
   border: none;
-  border-radius: var(--radius);
-  font-weight: 600;
   cursor: pointer;
-  width: 100%;
-  margin-top: 18px;
-  transition: transform var(--speed), box-shadow var(--speed);
+  font-weight: 700;
+  color: #042b2a;
+  background: var(--accent-gold);
+  box-shadow: 0 10px 28px rgba(255,183,77,0.12), inset 0 -2px 8px rgba(0,0,0,0.04);
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
+.btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(255,183,77,0.16); }
+.btn:active { transform: translateY(-1px); }
 
-.lux-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
-}
-
-/* ---------- INPUT ---------- */
-.lux-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--gold-light);
+/* secondary (ghost) button */
+.btn-ghost {
   background: transparent;
-  margin-bottom: 16px;
+  color: var(--muted);
+  border: 1px solid rgba(6,10,15,0.04);
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
-body[data-theme="light"] .lux-input {
-  background: #f2f2f2;
+/* small text helpers */
+.help-text {
+  font-size: 12px;
+  color: rgba(11,18,32,0.55);
+}
+body[data-theme="dark"] .help-text { color: rgba(220,246,240,0.5); }
+
+/* chat container basic */
+.chat-shell {
+  width: 980px;
+  max-width: 96%;
+  margin: 2rem auto;
 }
 
-/* ---------- GOLD TEXT ---------- */
-.gold {
-  color: var(--gold);
-}
-
-/* ---------- CHAT PAGE BASE ---------- */
-
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-.chat-header {
-  padding: 18px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: 600;
-  border-bottom: 1px solid var(--gold-light);
-}
-
-.chat-area {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.message {
-  max-width: 72%;
-  padding: 12px 18px;
-  margin-bottom: 14px;
-  border-radius: var(--radius);
-}
-
-.message.user {
-  background: var(--gold);
-  color: black;
-  margin-left: auto;
-}
-
-.message.bot {
-  background: var(--dark-card);
-  border: 1px solid var(--gold-light);
-}
-
-body[data-theme="light"] .message.bot {
-  background: #fff;
-}
-
-/* ---------- INPUT AREA ---------- */
-.chat-input-area {
-  display: flex;
-  padding: 14px;
-  border-top: 1px solid var(--gold-light);
-  background: var(--dark-bg);
-}
-
-body[data-theme="light"] .chat-input-area {
-  background: var(--light-card);
-}
-
-.chat-input-area input {
-  flex: 1;
-  padding: 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--gold-light);
-  margin-right: 10px;
-}
-
-.chat-input-area button {
-  background: var(--gold);
-  border: none;
-  padding: 0 22px;
-  border-radius: var(--radius);
-  font-weight: 600;
-}
+/* message bubble helpers (already used inline in Chat.jsx) */
