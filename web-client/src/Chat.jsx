@@ -92,9 +92,105 @@ export default function Chat() {
 
   // avatar placeholder
   const avatarFor = (name) => {
-    const initials = (name || "U").split(" ").map((s) => s[0]).slice(0, 2).join("");
+    const initials = (name || "U")
+      .split(" ")
+      .map((s) => s[0])
+      .slice(0, 2)
+      .join("");
     return initials.toUpperCase();
   };
+
+  // Inline avatar renderer used both in header and message list
+  function Avatar({ src, name, size = 40, showOnline = false }) {
+    const ringStyle = {
+      width: size,
+      height: size,
+      borderRadius: "50%",
+      overflow: "hidden",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+      border: "3px solid var(--soft-gold)",
+      boxShadow: "0 6px 18px var(--gold-shadow)",
+      background: "var(--glass-bg)",
+      position: "relative",
+      transition: "transform 160ms ease, box-shadow 160ms ease",
+    };
+
+    const imgStyle = {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      display: "block",
+    };
+
+    const initialsStyle = {
+      color: "var(--text-primary)",
+      fontWeight: 800,
+      fontSize: Math.floor(size / 2.6),
+      userSelect: "none",
+    };
+
+    return (
+      <div
+        className="kumbo-avatar-wrapper"
+        style={ringStyle}
+        title={name || ""}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+      >
+        {src ? (
+          <img
+            src={src}
+            alt={name || "avatar"}
+            style={imgStyle}
+            onError={(e) => {
+              // if image fails, hide it so initials can show
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        ) : (
+          <div style={initialsStyle}>{avatarFor(name)}</div>
+        )}
+
+        {/* online indicator (small gold dot top-right) */}
+        {showOnline && (
+          <span
+            style={{
+              position: "absolute",
+              top: -2,
+              right: -2,
+              width: Math.max(8, Math.floor(size / 7)),
+              height: Math.max(8, Math.floor(size / 7)),
+              borderRadius: "50%",
+              background: "linear-gradient(90deg,var(--soft-gold), var(--soft-gold-light))",
+              boxShadow: "0 0 8px var(--gold-shadow)",
+              border: "2px solid rgba(0,0,0,0.12)",
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Optional pulse animation injection (keeps styles in-component and won't break project CSS)
+  // This injects a small keyframes block only once:
+  useEffect(() => {
+    if (document.getElementById("kumbo-avatar-styles")) return;
+    const style = document.createElement("style");
+    style.id = "kumbo-avatar-styles";
+    style.innerHTML = `
+      @keyframes kumbo-pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.03); opacity: 0.95; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      .kumbo-avatar-wrapper { animation: kumbo-pulse 4s ease-in-out infinite; }
+    `;
+    document.head.appendChild(style);
+    // no cleanup — keep style for life of app
+  }, []);
 
   return (
     <div
@@ -104,7 +200,8 @@ export default function Chat() {
         justifyContent: "center",
         padding: "2rem",
         boxSizing: "border-box",
-        fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
+        fontFamily:
+          "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
       }}
     >
       {/* center wrapper */}
@@ -161,7 +258,10 @@ export default function Chat() {
                   textShadow: dark ? "0 6px 18px rgba(6,182,212,0.06)" : "none",
                 }}
               >
-                KUMBO <span style={{ fontWeight: 500, color: dark ? "#8fe6df" : "#065f7a", fontSize: 14 }}>Chat</span>
+                KUMBO{" "}
+                <span style={{ fontWeight: 500, color: dark ? "#8fe6df" : "#065f7a", fontSize: 14 }}>
+                  Chat
+                </span>
               </div>
               <div style={{ fontSize: 12, opacity: 0.7 }}>{/* tagline if desired */}</div>
             </div>
@@ -170,22 +270,9 @@ export default function Chat() {
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             {/* avatar + name */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div
-                title={user?.name}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 999,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                  background: dark ? "linear-gradient(90deg,#064e4b,#0ea5a3)" : "linear-gradient(90deg,#06b6d4,#ffd166)",
-                  color: dark ? "#071826" : "#042b2a",
-                  boxShadow: "0 6px 18px rgba(6,182,212,0.12)",
-                }}
-              >
-                {avatarFor(user?.name)}
+              <div title={user?.name}>
+                {/* header avatar shows uploaded avatar or initials */}
+                <Avatar src={user?.avatar || null} name={user?.name} size={40} showOnline={true} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", textAlign: "right" }}>
                 <div style={{ fontWeight: 700 }}>{user?.name}</div>
@@ -288,12 +375,39 @@ export default function Chat() {
                       alignSelf: mine ? "flex-end" : "flex-start",
                       maxWidth: "78%",
                       display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
+                      flexDirection: mine ? "row-reverse" : "row",
+                      gap: 8,
+                      alignItems: "flex-end",
                       transform: "translateY(0)",
                       transition: "transform 240ms ease",
                     }}
                   >
+                    {/* avatar column */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start", gap: 6 }}>
+                      {/* show avatar for message sender:
+                          - for local user: use user.avatar (if exists) or initials
+                          - for others: if message has avatar (m.avatar) use it, else show initials
+                          - for messages from 'AI' (if you use that label) show AI avatar
+                      */}
+                      <div>
+                        <Avatar
+                          src={
+                            mine
+                              ? user?.avatar || null
+                              : m.avatar
+                              ? m.avatar
+                              : m.user === "AI" || m.user === "Assistant" || m.user === "Bot"
+                              ? "/ai-avatar.png"
+                              : null
+                          }
+                          name={m.user}
+                          size={42}
+                          showOnline={mine}
+                        />
+                      </div>
+                    </div>
+
+                    {/* message bubble */}
                     <div
                       style={{
                         padding: "10px 14px",
@@ -308,11 +422,13 @@ export default function Chat() {
                         color: mine ? (dark ? "#071826" : "#042b2a") : dark ? "#e6f7f5" : "#071826",
                         boxShadow: mine ? "0 8px 30px rgba(6,182,212,0.08)" : "none",
                         wordBreak: "break-word",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                        maxWidth: "78%",
                       }}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
-                        {m.user}
-                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700 }}>{m.user}</div>
                       <div style={{ fontSize: 14, lineHeight: 1.25 }}>{m.body}</div>
                       <div style={{ fontSize: 11, opacity: 0.6, marginTop: 8, textAlign: "right" }}>
                         {timeShort(m.created_at ?? m.createdAt ?? new Date().toISOString())}
@@ -394,7 +510,19 @@ export default function Chat() {
               alignItems: "center",
             }}
           >
-            <div style={{ width: 80, height: 80, borderRadius: 999, background: dark ? "#083237" : "#eafcfd", display: "grid", placeItems: "center", fontWeight: 800, color: dark ? "#8fe6df" : "#065f7a", fontSize: 28 }}>
+            <div
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 999,
+                background: dark ? "#083237" : "#eafcfd",
+                display: "grid",
+                placeItems: "center",
+                fontWeight: 800,
+                color: dark ? "#8fe6df" : "#065f7a",
+                fontSize: 28,
+              }}
+            >
               {avatarFor(user?.name)}
             </div>
             <div style={{ textAlign: "center" }}>
@@ -466,7 +594,18 @@ export default function Chat() {
           </div>
 
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <div style={{ width: 56, height: 56, borderRadius: 999, background: dark ? "#083237" : "#eafcfd", display: "grid", placeItems: "center", fontWeight: 800, color: dark ? "#8fe6df" : "#065f7a" }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 999,
+                background: dark ? "#083237" : "#eafcfd",
+                display: "grid",
+                placeItems: "center",
+                fontWeight: 800,
+                color: dark ? "#8fe6df" : "#065f7a",
+              }}
+            >
               {avatarFor(user?.name)}
             </div>
             <div style={{ flex: 1 }}>
